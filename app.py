@@ -243,6 +243,34 @@ def init_database():
             print(traceback.format_exc())
             return False
 
+
+@app.route('/debug/db')
+def debug_db():
+    """Debug database connection and tables"""
+    try:
+        # Test connection
+        from sqlalchemy import text
+        result = db.session.execute(text('SELECT version()'))
+        version = result.fetchone()[0]
+        
+        # Check if tables exist
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        
+        # Check users table
+        user_count = User.query.count() if 'users' in tables else 'N/A'
+        
+        return {
+            'database_version': version,
+            'tables': tables,
+            'user_count': user_count,
+            'database_url': app.config['SQLALCHEMY_DATABASE_URI'][:50] + '...'  # masked
+        }
+    except Exception as e:
+        return {'error': str(e), 'type': type(e).__name__}, 500
+
+
 # ------------------------------------------------------------------
 #  Run the development server
 # ------------------------------------------------------------------
