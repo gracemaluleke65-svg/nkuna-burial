@@ -1,0 +1,675 @@
+{% extends "base.html" %}
+
+{% block title %}Add Member - Nkuna Burial Society{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Add Member Specific Styles */
+    .add-member-section {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        min-height: calc(100vh - 200px);
+        padding: 3rem 0;
+    }
+    
+    .form-container {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .form-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #0ea5e9, #fbbf24, #10b981);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.5s ease;
+    }
+    
+    .form-container:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .form-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.12);
+        border-color: rgba(14, 165, 233, 0.2);
+    }
+    
+    .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+        padding-bottom: 1rem;
+    }
+    
+    .form-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 4px;
+        background: linear-gradient(90deg, #0ea5e9, #fbbf24);
+        border-radius: 2px;
+    }
+    
+    .policy-info-card {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 5px solid #0ea5e9;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .policy-info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent, rgba(14, 165, 233, 0.1), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+    
+    .policy-info-card:hover::before {
+        transform: translateX(100%);
+    }
+    
+    .policy-info-card:hover {
+        border-left-color: #fbbf24;
+        transform: translateX(5px);
+    }
+    
+    .form-group-modern {
+        margin-bottom: 1.75rem;
+        position: relative;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #334155;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control-modern {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: white;
+        color: #1e293b;
+    }
+    
+    .form-control-modern:focus {
+        outline: none;
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .form-control-modern:hover:not(:focus) {
+        border-color: #94a3b8;
+        transform: translateY(-1px);
+    }
+    
+    /* Premium Preview Card */
+    .premium-preview {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, rgba(251, 191, 36, 0.05) 100%);
+        border: 2px dashed #0ea5e9;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .premium-preview:hover {
+        border-color: #fbbf24;
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(251, 191, 36, 0.1) 100%);
+        transform: translateY(-2px);
+    }
+    
+    .premium-badge {
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(14, 165, 233, 0.2);
+    }
+    
+    .premium-badge:hover {
+        transform: scale(1.05) rotate(-2deg);
+        box-shadow: 0 6px 20px rgba(14, 165, 233, 0.3);
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    }
+    
+    /* Relationship Select */
+    .select-wrapper {
+        position: relative;
+    }
+    
+    .select-wrapper::after {
+        content: '▼';
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        pointer-events: none;
+        transition: all 0.3s ease;
+    }
+    
+    .select-wrapper:hover::after {
+        color: #0ea5e9;
+        transform: translateY(-50%) rotate(180deg);
+    }
+    
+    select.form-control-modern {
+        appearance: none;
+        cursor: pointer;
+        padding-right: 2.5rem;
+    }
+    
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #f1f5f9;
+    }
+    
+    .btn-submit {
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: 0.5s;
+    }
+    
+    .btn-submit:hover::before {
+        left: 100%;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
+        background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+    }
+    
+    .btn-cancel {
+        background: white;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        flex: 1;
+    }
+    
+    .btn-cancel:hover {
+        background: #f8fafc;
+        color: #475569;
+        border-color: #94a3b8;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    /* Age Calculation */
+    .age-display {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        animation: slideIn 0.5s ease;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 1.5rem;
+            margin: 0 1rem;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+    
+    /* Loading Animation */
+    .loading-spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+        margin-left: 0.5rem;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="add-member-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="form-container">
+                    <div class="form-header">
+                        <h2 class="gradient-text mb-2">Add Family Member</h2>
+                        <p class="text-muted">Add a family member to your burial policy (Maximum: 15 members including yourself)</p>
+                    </div>
+                    
+                    <!-- Policy Information -->
+                    <div class="policy-info-card">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="fw-bold text-white mb-2">Policy Details</h5>
+                                <p class="text-light mb-1"><i class="fas fa-file-contract me-2"></i> {{ policy.policy_number }}</p>
+                                <p class="text-light mb-1"><i class="fas fa-tag me-2"></i> {{ policy.policy_name }}</p>
+                                <p class="text-light"><i class="fas fa-shield-alt me-2"></i> R{{ "%.2f"|format(policy.coverage_amount) }} Coverage</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="fw-bold text-white mb-2">Current Status</h5>
+                                <p class="text-light mb-1">
+                                    <i class="fas fa-users me-2"></i> 
+                                    Members: {{ policy.covered_members|length + 1 }}/15
+                                </p>
+                                <p class="text-light mb-1">
+                                    <i class="fas fa-calendar-check me-2"></i> 
+                                    Next Payment: {{ policy.next_payment_date.strftime('%d %b %Y') }}
+                                </p>
+                                <p class="text-light">
+                                    <i class="fas fa-money-bill-wave me-2"></i> 
+                                    Monthly Premium: R{{ "%.2f"|format(policy.monthly_premium) }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="POST" action="" id="addMemberForm">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Member Details -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    {{ form.first_name.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="fas fa-user text-primary"></i>
+                                        </span>
+                                        {{ form.first_name(class="form-control-modern border-start-0", placeholder="Enter first name") }}
+                                    </div>
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.first_name.errors %}
+                                                <small><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    {{ form.last_name.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="fas fa-user text-primary"></i>
+                                        </span>
+                                        {{ form.last_name(class="form-control-modern border-start-0", placeholder="Enter last name") }}
+                                    </div>
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.last_name.errors %}
+                                                <small><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    {{ form.id_number.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="fas fa-id-card text-primary"></i>
+                                        </span>
+                                        {{ form.id_number(class="form-control-modern border-start-0", placeholder="13-digit ID number") }}
+                                    </div>
+                                    <small class="form-text text-muted">South African ID number (13 digits)</small>
+                                    {% if form.id_number.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.id_number.errors %}
+                                                <small><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    {{ form.relationship.label(class="form-label") }}
+                                    <div class="select-wrapper">
+                                        {{ form.relationship(class="form-control-modern") }}
+                                    </div>
+                                    {% if form.relationship.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.relationship.errors %}
+                                                <small><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    {{ form.date_of_birth.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="fas fa-birthday-cake text-primary"></i>
+                                        </span>
+                                        {{ form.date_of_birth(class="form-control-modern border-start-0", type="date") }}
+                                    </div>
+                                    {% if form.date_of_birth.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.date_of_birth.errors %}
+                                                <small><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <!-- Premium Calculation -->
+                                <div class="form-group-modern">
+                                    <label class="form-label">Estimated Premium</label>
+                                    <div class="premium-preview text-center">
+                                        <h5 class="text-muted mb-2">Age-Based Premium</h5>
+                                        <div class="premium-badge" id="premiumDisplay">
+                                            <i class="fas fa-coins"></i>
+                                            <span id="premiumAmount">R0.00</span>
+                                        </div>
+                                        <p class="text-muted mt-2 mb-0" id="ageDisplay">Enter date of birth to calculate</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn-submit" id="submitBtn">
+                                <i class="fas fa-user-plus me-2"></i> Add Member
+                                <div class="loading-spinner" id="loadingSpinner"></div>
+                            </button>
+                            <a href="{{ url_for('main.view_policy', policy_id=policy.id) }}" class="btn-cancel">
+                                <i class="fas fa-times me-2"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Important Information -->
+                <div class="alert alert-modern alert-info mt-4">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle fa-2x text-info"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="alert-heading">Important Information</h5>
+                            <ul class="mb-0">
+                                <li>You can add up to <strong>14 additional members</strong> (15 total including yourself)</li>
+                                <li>Premium is calculated based on age at time of adding</li>
+                                <li>All members must have valid South African ID numbers</li>
+                                <li>Monthly premium will be added to your policy's total premium</li>
+                                <li>You can remove members at any time (no refunds for paid premiums)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dobInput = document.querySelector('#date_of_birth');
+        const premiumDisplay = document.querySelector('#premiumAmount');
+        const ageDisplay = document.querySelector('#ageDisplay');
+        const submitBtn = document.querySelector('#submitBtn');
+        const loadingSpinner = document.querySelector('#loadingSpinner');
+        const form = document.querySelector('#addMemberForm');
+        
+        /* ---------- NEW: auto-fill DOB from SA ID ---------- */
+        function extractDOBFromSAID(id) {
+            // YYMMDD in first 6 digits
+            const yy = parseInt(id.substr(0, 2), 10);
+            const mm = parseInt(id.substr(2, 2), 10);
+            const dd = parseInt(id.substr(4, 2), 10);
+            
+            const currentYear = new Date().getFullYear() % 100; // last 2 digits
+            const century = yy <= currentYear ? '20' : '19';
+            const yyyy = century + String(yy).padStart(2, '0');
+            
+            return `${yyyy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+        }
+        
+        const idInput = document.querySelector('#id_number');
+        if (idInput) {
+            idInput.addEventListener('input', function() {
+                const val = this.value.replace(/\D/g, '');
+                this.value = val.substring(0, 13);
+                
+                // visual feedback
+                if (val.length === 13) {
+                    this.style.borderColor = '#10b981';
+                    this.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                    
+                    // write DOB into field
+                    const dob = extractDOBFromSAID(val);
+                    dobInput.value = dob;
+                    dobInput.dispatchEvent(new Event('change')); // trigger premium calc
+                } else if (val.length > 0) {
+                    this.style.borderColor = '#fbbf24';
+                    this.style.boxShadow = '0 0 0 3px rgba(251, 191, 36, 0.1)';
+                }
+            });
+        }
+        /* -------------------------------------------------- */
+        
+        // Calculate age from date of birth
+        function calculateAge(birthDate) {
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
+        
+        // Calculate premium based on age
+        function calculatePremium(age) {
+            const ageBands = {
+                '0-18': 50.00,
+                '19-30': 100.00,
+                '31-45': 150.00,
+                '46-60': 200.00,
+                '61-75': 250.00,
+                '76+': 300.00
+            };
+            
+            if (age <= 18) return ageBands['0-18'];
+            if (age <= 30) return ageBands['19-30'];
+            if (age <= 45) return ageBands['31-45'];
+            if (age <= 60) return ageBands['46-60'];
+            if (age <= 75) return ageBands['61-75'];
+            return ageBands['76+'];
+        }
+        
+        // Update premium display when date of birth changes
+        if (dobInput) {
+            dobInput.addEventListener('change', function() {
+                if (this.value) {
+                    const age = calculateAge(this.value);
+                    const premium = calculatePremium(age);
+                    
+                    // Animate premium update
+                    premiumDisplay.style.opacity = '0';
+                    ageDisplay.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        premiumDisplay.textContent = `R${premium.toFixed(2)}`;
+                        ageDisplay.innerHTML = `<span class="age-display"><i class="fas fa-user-clock"></i> ${age} years old</span>`;
+                        
+                        premiumDisplay.style.opacity = '1';
+                        ageDisplay.style.opacity = '1';
+                        
+                        // Add animation effect
+                        const badge = document.querySelector('.premium-badge');
+                        badge.style.transform = 'scale(1.1)';
+                        setTimeout(() => {
+                            badge.style.transform = 'scale(1)';
+                        }, 300);
+                    }, 200);
+                }
+            });
+        }
+        
+        // Form submission with loading animation
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // Validate date of birth
+                if (dobInput && dobInput.value) {
+                    const age = calculateAge(dobInput.value);
+                    if (age < 0 || age > 120) {
+                        e.preventDefault();
+                        alert('Please enter a valid date of birth');
+                        return;
+                    }
+                }
+                
+                // Show loading animation
+                submitBtn.disabled = true;
+                loadingSpinner.style.display = 'inline-block';
+                submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i> Adding Member...';
+            });
+        }
+        
+        // Real-time age calculation as user types
+        if (dobInput) {
+            dobInput.addEventListener('input', function() {
+                if (this.value) {
+                    const age = calculateAge(this.value);
+                    if (age >= 0 && age <= 120) {
+                        const premium = calculatePremium(age);
+                        premiumDisplay.textContent = `R${premium.toFixed(2)}`;
+                        ageDisplay.innerHTML = `<span class="age-display"><i class="fas fa-user-clock"></i> ${age} years old</span>`;
+                    }
+                }
+            });
+        }
+        
+        // Add focus effects to form inputs
+        const formInputs = document.querySelectorAll('.form-control-modern');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.parentElement.classList.remove('focused');
+            });
+        });
+        
+        // Initialize with today's date if empty
+        if (dobInput && !dobInput.value) {
+            const today = new Date();
+            const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+            dobInput.max = today.toISOString().split('T')[0];
+            dobInput.min = new Date(today.getFullYear() - 120, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+        }
+    });
+</script>
+{% endblock %}

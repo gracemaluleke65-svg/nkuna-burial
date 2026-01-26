@@ -1,0 +1,796 @@
+{% extends "base.html" %}
+
+{% block title %}{{ policy.policy_name }} - Nkuna Burial Society{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Policy Detail Specific Styles */
+    .policy-detail-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 3rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .policy-detail-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold), #10b981);
+    }
+    
+    .policy-detail-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(251, 191, 36, 0.2));
+        border-radius: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: var(--primary-teal);
+        margin-bottom: 1.5rem;
+        transition: var(--transition);
+    }
+    
+    .policy-detail-header:hover .policy-detail-icon {
+        transform: rotate(10deg) scale(1.1);
+        color: var(--accent-gold);
+    }
+    
+    .coverage-badge {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.2));
+        border: 2px solid #10b981;
+        color: #10b981;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.2rem;
+        transition: var(--transition);
+    }
+    
+    .coverage-badge:hover {
+        background: linear-gradient(135deg, #10b981, #34d399);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    }
+    
+    /* Member Status Cards */
+    .member-status-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: var(--transition);
+        border-left: 5px solid;
+    }
+    
+    .member-status-card.active {
+        border-left-color: #10b981;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.02));
+    }
+    
+    .member-status-card.inactive {
+        border-left-color: #6c757d;
+        background: linear-gradient(135deg, rgba(108, 117, 125, 0.05), rgba(108, 117, 125, 0.02));
+    }
+    
+    .member-status-card.has-claim {
+        border-left-color: #f59e0b;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.02));
+    }
+    
+    .member-avatar-large {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary-teal), #38bdf8);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        transition: var(--transition);
+    }
+    
+    .member-detail-card:hover .member-avatar-large {
+        transform: scale(1.1) rotate(5deg);
+        background: linear-gradient(135deg, var(--accent-gold), #fbbf24);
+    }
+    
+    /* Claim Status Badges */
+    .claim-status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .claim-status-active {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .claim-status-pending {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    .claim-status-approved {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.05));
+        color: var(--primary-teal);
+        border: 1px solid rgba(14, 165, 233, 0.3);
+    }
+    
+    .claim-status-paid {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+        color: #8b5cf6;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+    
+    .claim-status-rejected {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Statistics Cards */
+    .stats-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: var(--transition);
+        border: 2px solid transparent;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-teal);
+        box-shadow: var(--shadow-md);
+    }
+    
+    /* Action Buttons */
+    .action-button {
+        background: linear-gradient(135deg, var(--primary-teal) 0%, #0284c7 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .action-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3);
+        color: white;
+        background: linear-gradient(135deg, #0284c7 0%, var(--primary-teal) 100%);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+        background: var(--card-bg);
+        border-radius: 16px;
+        border: 2px dashed #e2e8f0;
+        transition: var(--transition);
+    }
+    
+    .empty-state:hover {
+        border-color: var(--primary-teal);
+        transform: translateY(-5px);
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        background: linear-gradient(45deg, var(--primary-teal), var(--accent-gold));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 1rem;
+    }
+    
+    /* Recent Claims Section */
+    .recent-claims-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 2rem;
+        transition: var(--transition);
+        border: 2px solid transparent;
+    }
+    
+    .recent-claims-card:hover {
+        border-color: var(--primary-teal);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .claim-row {
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 0.5rem;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .claim-row:hover {
+        background: linear-gradient(90deg, rgba(14, 165, 233, 0.05), rgba(251, 191, 36, 0.05));
+        transform: translateX(5px);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .policy-detail-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .policy-detail-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 2.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Back Button -->
+    <div class="mb-4">
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Policy Header -->
+    <div class="policy-detail-header">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="policy-detail-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h1 class="display-5 fw-bold mb-2">{{ policy.policy_name }}</h1>
+                <p class="lead mb-4">{{ policy.policy_number }}</p>
+                
+                <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
+                    <span class="coverage-badge">
+                        R{{ "%.2f"|format(policy.coverage_amount) }} Coverage
+                    </span>
+                    <span class="badge {% if is_overdue %}bg-danger{% else %}bg-success{% endif %} px-3 py-2">
+                        {% if is_overdue %}
+                            <i class="fas fa-exclamation-triangle me-1"></i> OVERDUE
+                        {% else %}
+                            <i class="fas fa-check-circle me-1"></i> ACTIVE
+                        {% endif %}
+                    </span>
+                    {% if owner_has_claim %}
+                    <span class="badge bg-warning px-3 py-2">
+                        <i class="fas fa-hand-holding-usd me-1"></i> OWNER CLAIM PROCESSED
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="d-flex flex-column gap-3">
+                    <a href="{{ url_for('main.pay_premium', policy_id=policy.id) }}" class="action-button">
+                        <i class="fas fa-credit-card me-2"></i> Pay Premium
+                    </a>
+                    <a href="{{ url_for('main.add_member', policy_id=policy.id) }}" class="btn btn-outline-light">
+                        <i class="fas fa-user-plus me-2"></i> Add Member
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card">
+                <div class="h3 fw-bold text-primary">{{ total_members_count }}</div>
+                <small class="text-muted">Active Members</small>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-primary" style="width: {{ member_utilization }}%"></div>
+                </div>
+                <small class="text-muted">{{ member_utilization|int }}% of max capacity</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card">
+                <div class="h3 fw-bold text-success">{{ active_members|length }}</div>
+                <small class="text-muted">Covered Members</small>
+                <div class="text-success">
+                    <i class="fas fa-check-circle me-1"></i> Active
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card">
+                <div class="h3 fw-bold text-warning">{{ inactive_members|length }}</div>
+                <small class="text-muted">Inactive Members</small>
+                <div class="text-warning">
+                    <i class="fas fa-exclamation-circle me-1"></i> 
+                    {% if inactive_members|selectattr('has_claim', 'equalto', True)|list|length > 0 %}
+                        {{ inactive_members|selectattr('has_claim', 'equalto', True)|list|length }} with claims
+                    {% else %}
+                        No claims
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card">
+                <div class="h3 fw-bold text-info">{{ recent_claims|length }}</div>
+                <small class="text-muted">Total Claims</small>
+                <div class="text-info">
+                    <i class="fas fa-hand-holding-usd me-1"></i> For this policy
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policy Details -->
+    <div class="row mb-5">
+        <div class="col-lg-8">
+            <div class="card bg-light border-0 rounded-3 mb-4">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-4">Policy Details</h4>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">Coverage Amount</span>
+                                <span class="fw-bold text-success">R{{ "%.2f"|format(policy.coverage_amount) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">Monthly Premium</span>
+                                <span class="fw-bold">R{{ "%.2f"|format(policy.monthly_premium) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Policy Status</span>
+                                <span class="badge {% if policy.status == 'active' %}bg-success{% elif policy.status == 'suspended' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ policy.status|upper }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">Start Date</span>
+                                <span class="fw-bold">{{ policy.start_date.strftime('%d %B %Y') }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">Next Payment</span>
+                                <span class="fw-bold {% if is_overdue %}text-danger{% endif %}">
+                                    {{ policy.next_payment_date.strftime('%d %B %Y') }}
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Days Remaining</span>
+                                <span class="fw-bold" data-days-remaining>
+                                    {% if days_remaining < 0 %}{{ -days_remaining }} days overdue{% else %}{{ days_remaining }} days{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Members Section -->
+            <div class="card bg-light border-0 rounded-3 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold">Active Members</h4>
+                        <span class="badge bg-success">{{ active_members|length }} Active</span>
+                    </div>
+                    
+                    {% if active_members %}
+                        <div class="row">
+                            {% for member in active_members %}
+                            <div class="col-md-6 mb-3">
+                                <div class="member-status-card active">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="member-avatar-large me-3">
+                                            {{ member.first_name[0] }}{{ member.last_name[0] }}
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold mb-0">{{ member.first_name }} {{ member.last_name }}</h6>
+                                            <small class="text-muted">{{ member.relationship|title }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Age</small>
+                                            <strong>{{ member.calculate_age() }}</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Premium</small>
+                                            <strong class="text-success">R{{ "%.2f"|format(member.monthly_premium) }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="claim-status-badge claim-status-active">
+                                            <i class="fas fa-check-circle me-1"></i> ACTIVE
+                                        </span>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ url_for('main.submit_claim', policy_id=policy.id) }}?member_id={{ member.id }}">
+                                                        <i class="fas fa-hand-holding-heart me-2"></i> Submit Claim
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No active members</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Inactive Members Section -->
+            {% if inactive_members %}
+            <div class="card bg-light border-0 rounded-3 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold">Inactive Members</h4>
+                        <span class="badge bg-secondary">{{ inactive_members|length }} Inactive</span>
+                    </div>
+                    
+                    <div class="row">
+                        {% for member in inactive_members %}
+                        <div class="col-md-6 mb-3">
+                            <div class="member-status-card {% if member.has_claim %}has-claim{% else %}inactive{% endif %}">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="member-avatar-large me-3" style="opacity: 0.6;">
+                                        {{ member.first_name[0] }}{{ member.last_name[0] }}
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">{{ member.first_name }} {{ member.last_name }}</h6>
+                                        <small class="text-muted">{{ member.relationship|title }}</small>
+                                    </div>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Age</small>
+                                        <strong>{{ member.calculate_age() }}</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Premium</small>
+                                        <strong class="text-success">R{{ "%.2f"|format(member.monthly_premium) }}</strong>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    {% if member.has_claim %}
+                                        <span class="claim-status-badge claim-status-approved">
+                                            <i class="fas fa-hand-holding-usd me-1"></i> CLAIM PROCESSED
+                                        </span>
+                                    {% else %}
+                                        <span class="claim-status-badge claim-status-rejected">
+                                            <i class="fas fa-user-times me-1"></i> INACTIVE
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Claims Section -->
+            {% if recent_claims %}
+            <div class="recent-claims-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold">Recent Claims</h4>
+                    <a href="{{ url_for('main.claims') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye me-1"></i> View All
+                    </a>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Deceased</th>
+                                <th>Status</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for claim in recent_claims %}
+                            <tr class="claim-row" onclick="window.location='{{ url_for('main.claims') }}#claim-{{ claim.id }}'">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
+                                            <i class="fas fa-user text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">{{ claim.deceased_name }}</div>
+                                            <small class="text-muted">
+                                                {% if claim.covered_member_id %}
+                                                    Covered Member
+                                                {% else %}
+                                                    Policy Owner
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="claim-status-badge claim-status-{{ claim.status }}">
+                                        {% if claim.status == 'pending' %}
+                                            <i class="fas fa-clock me-1"></i>
+                                        {% elif claim.status == 'approved' %}
+                                            <i class="fas fa-check-circle me-1"></i>
+                                        {% elif claim.status == 'paid' %}
+                                            <i class="fas fa-money-check-alt me-1"></i>
+                                        {% elif claim.status == 'rejected' %}
+                                            <i class="fas fa-times-circle me-1"></i>
+                                        {% endif %}
+                                        {{ claim.status|replace('_', ' ')|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-success">R{{ "%.2f"|format(claim.claim_amount) }}</div>
+                                    <small class="text-muted">Net: R{{ "%.2f"|format(claim.net_amount) }}</small>
+                                </td>
+                                <td>
+                                    <div>{{ claim.created_at.strftime('%d %b %Y') }}</div>
+                                    <small class="text-muted">{{ claim.created_at.strftime('%I:%M %p') }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card bg-light border-0 rounded-3 mb-4 sticky-top" style="top: 20px;">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">Quick Actions</h5>
+                    
+                    <div class="d-grid gap-3 mb-4">
+                        <a href="{{ url_for('main.pay_premium', policy_id=policy.id) }}" class="action-button">
+                            <i class="fas fa-credit-card me-2"></i> Pay Premium
+                        </a>
+                        
+                        <a href="{{ url_for('main.add_member', policy_id=policy.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-plus me-2"></i> Add Member
+                        </a>
+                        
+                        <a href="{{ url_for('main.submit_claim', policy_id=policy.id) }}" class="btn btn-outline-success">
+                            <i class="fas fa-hand-holding-heart me-2"></i> Submit Claim
+                        </a>
+                    </div>
+
+                    <!-- Policy Summary -->
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-3">
+                        <h6 class="fw-bold mb-3">Policy Summary</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Active Members:</span>
+                            <span class="fw-bold">{{ total_members_count }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Inactive Members:</span>
+                            <span class="fw-bold">{{ inactive_members|length }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Claims Processed:</span>
+                            <span class="fw-bold">{{ recent_claims|length }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Member Utilization:</span>
+                            <span class="fw-bold">{{ member_utilization|int }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Reminder -->
+            {% if is_overdue %}
+            <div class="card border-danger border-2 rounded-3 mb-4">
+                <div class="card-body p-4">
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle text-danger fa-3x mb-3"></i>
+                        <h5 class="text-danger fw-bold">Payment Overdue!</h5>
+                        <p class="text-muted mb-3">Your premium payment is overdue by {{ -days_remaining }} days.</p>
+                        <a href="{{ url_for('main.pay_premium', policy_id=policy.id) }}" class="btn btn-danger w-100">
+                            <i class="fas fa-credit-card me-2"></i> Pay Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% elif days_remaining <= 7 %}
+            <div class="card border-warning border-2 rounded-3 mb-4">
+                <div class="card-body p-4">
+                    <div class="text-center">
+                        <i class="fas fa-clock text-warning fa-3x mb-3"></i>
+                        <h5 class="text-warning fw-bold">Payment Due Soon!</h5>
+                        <p class="text-muted mb-3">Your premium payment is due in {{ days_remaining }} days.</p>
+                        <a href="{{ url_for('main.pay_premium', policy_id=policy.id) }}" class="btn btn-warning w-100">
+                            <i class="fas fa-credit-card me-2"></i> Pay Early
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Member Action Modals -->
+{% for member in policy.covered_members %}
+<!-- Edit Member Modal -->
+<div class="modal fade modal-modern" id="editMember{{ member.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Member Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-control" value="{{ member.first_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-control" value="{{ member.last_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Relationship</label>
+                        <select class="form-select" required>
+                            <option value="spouse" {% if member.relationship == 'spouse' %}selected{% endif %}>Spouse</option>
+                            <option value="child" {% if member.relationship == 'child' %}selected{% endif %}>Child</option>
+                            <option value="parent" {% if member.relationship == 'parent' %}selected{% endif %}>Parent</option>
+                            <option value="sibling" {% if member.relationship == 'sibling' %}selected{% endif %}>Sibling</option>
+                            <option value="other" {% if member.relationship == 'other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="action-button">Update Member</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Remove Member Modal -->
+<div class="modal fade modal-modern" id="removeMember{{ member.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove Member</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <i class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
+                    <h5>Are you sure you want to remove this member?</h5>
+                    <p class="text-muted">This action cannot be undone.</p>
+                    <div class="alert alert-warning">
+                        <strong>{{ member.first_name }} {{ member.last_name }}</strong><br>
+                        Relationship: {{ member.relationship|title }}<br>
+                        Monthly Premium: R{{ "%.2f"|format(member.monthly_premium) }}
+                    </div>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-danger">Remove Member</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh to check for claim status changes
+    setInterval(() => {
+        fetch('{{ url_for("main.view_policy", policy_id=policy.id) }}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Check if member statuses have changed
+            const newActiveCount = $(html).find('.member-status-card.active').length;
+            const currentActiveCount = $('.member-status-card.active').length;
+            
+            if (newActiveCount !== currentActiveCount) {
+                // Member status changed, reload page
+                location.reload();
+            }
+        })
+        .catch(error => console.log('Auto-refresh failed:', error));
+    }, 30000);
+
+    // Animate member cards on load
+    document.querySelectorAll('.member-status-card').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    // Add click animation to claim rows
+    document.querySelectorAll('.claim-row').forEach(row => {
+        row.addEventListener('click', function() {
+            this.style.background = 'linear-gradient(90deg, rgba(14, 165, 233, 0.1), rgba(251, 191, 36, 0.1))';
+            setTimeout(() => {
+                this.style.background = '';
+            }, 200);
+        });
+    });
+
+    // Update days remaining counter
+    function updateDaysRemaining() {
+        const daysElement = document.querySelector('[data-days-remaining]');
+        if (daysElement) {
+            const today = new Date();
+            const nextPayment = new Date('{{ policy.next_payment_date.isoformat() }}');
+            const daysRemaining = Math.ceil((nextPayment - today) / (1000 * 60 * 60 * 24));
+            
+            if (daysRemaining < 0) {
+                daysElement.textContent = `${Math.abs(daysRemaining)} days overdue`;
+                daysElement.className = 'fw-bold text-danger';
+            } else if (daysRemaining <= 7) {
+                daysElement.textContent = `${daysRemaining} days remaining`;
+                daysElement.className = 'fw-bold text-warning';
+            } else {
+                daysElement.textContent = `${daysRemaining} days remaining`;
+                daysElement.className = 'fw-bold text-success';
+            }
+        }
+    }
+
+    updateDaysRemaining();
+});
+</script>
+{% endblock %}

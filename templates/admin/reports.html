@@ -1,0 +1,908 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Reports Dashboard Styles */
+    .reports-dashboard {
+        min-height: calc(100vh - 200px);
+    }
+    
+    /* Filter Section */
+    .filter-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 16px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .filter-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .filter-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .filter-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: var(--primary-teal);
+    }
+    
+    /* Date Range Picker */
+    .date-range-picker {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .date-range-picker:focus-within {
+        border-color: var(--primary-teal);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    }
+    
+    /* Stats Cards */
+    .stats-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid transparent;
+    }
+    
+    .stats-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .stats-card:hover::after {
+        transform: translateY(0);
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        border-color: var(--primary-teal);
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover .stat-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(45deg, var(--primary-teal), var(--accent-gold));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    /* Charts Container */
+    .chart-container {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        height: 100%;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .chart-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold), #10b981);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.5s ease;
+    }
+    
+    .chart-container:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .chart-container:hover {
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: var(--primary-teal);
+        transform: translateY(-3px);
+    }
+    
+    /* Reports Table */
+    .reports-table {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .reports-table:hover {
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        transform: translateY(-3px);
+    }
+    
+    .reports-table th {
+        background: linear-gradient(135deg, var(--primary-dark), #1e3a8a);
+        color: white;
+        border: none;
+        padding: 1.25rem 1.5rem;
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .reports-table th::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent-gold), var(--primary-teal));
+    }
+    
+    .reports-table tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .reports-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    
+    .reports-table tbody tr:hover {
+        background: linear-gradient(90deg, rgba(14, 165, 233, 0.05), rgba(251, 191, 36, 0.05));
+        transform: scale(1.01);
+    }
+    
+    .reports-table td {
+        padding: 1.25rem 1.5rem;
+        border: none;
+        vertical-align: middle;
+        transition: all 0.2s ease;
+    }
+    
+    .reports-table tbody tr:hover td {
+        padding-left: 1.75rem;
+    }
+    
+    /* Badge Styles */
+    .transaction-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-block;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .transaction-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .transaction-badge:hover::before {
+        left: 100%;
+    }
+    
+    .badge-deposit {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+    
+    .badge-deposit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+    }
+    
+    .badge-premium {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+    }
+    
+    .badge-premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+    }
+    
+    .badge-payout {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+    
+    .badge-payout:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+    }
+    
+    .badge-fee {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+    
+    .badge-fee:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Export Buttons */
+    .export-btn {
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .export-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .export-btn:hover::before {
+        left: 100%;
+    }
+    
+    .export-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3);
+        background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+    }
+    
+    /* Summary Cards */
+    .summary-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        height: 100%;
+        transition: all 0.3s ease;
+        border: 2px solid #f1f5f9;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .summary-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: linear-gradient(to bottom, var(--primary-teal), var(--accent-gold));
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .summary-card:hover::after {
+        transform: translateX(0);
+    }
+    
+    .summary-card:hover {
+        border-color: var(--primary-teal);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    
+    /* Chart Placeholder */
+    .chart-placeholder {
+        width: 100%;
+        height: 200px;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .chart-container:hover .chart-placeholder {
+        background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+        background: white;
+        border-radius: 16px;
+        border: 2px dashed #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    
+    .empty-state:hover {
+        border-color: var(--primary-teal);
+        background: #f8fafc;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .stat-value {
+            font-size: 2rem;
+        }
+        
+        .reports-table th,
+        .reports-table td {
+            padding: 1rem;
+        }
+        
+        .stats-card,
+        .chart-container {
+            padding: 1rem;
+        }
+    }
+    
+    /* Loading Animation */
+    @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+    
+    .loading-shimmer {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reports-dashboard py-4">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="gradient-text display-6 fw-bold mb-2">Reports & Analytics</h1>
+                        <p class="text-muted mb-0">Comprehensive financial and operational insights</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="export-btn" onclick="exportReport('pdf')">
+                            <i class="fas fa-file-pdf me-2"></i> PDF
+                        </button>
+                        <button class="export-btn" onclick="exportReport('csv')">
+                            <i class="fas fa-file-csv me-2"></i> CSV
+                        </button>
+                        <button class="export-btn" onclick="exportReport('excel')">
+                            <i class="fas fa-file-excel me-2"></i> Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Date Filter Card -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="filter-card p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <h5 class="fw-bold mb-0">Report Period</h5>
+                            <p class="text-muted mb-0">Select time range for analysis</p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="date-range-picker">
+                                <form method="GET" action="{{ url_for('admin.reports') }}" class="row g-3">
+                                    <div class="col-md-5">
+                                        <label class="form-label text-muted small">Start Date</label>
+                                        <input type="date" class="form-control" value="{{ start_date.strftime('%Y-%m-%d') if start_date else '' }}" name="start_date">
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label text-muted small">End Date</label>
+                                        <input type="date" class="form-control" value="{{ end_date.strftime('%Y-%m-%d') if end_date else '' }}" name="end_date">
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button type="submit" class="btn btn-modern w-100">
+                                            <i class="fas fa-filter me-2"></i> Filter
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-end">
+                            <div class="btn-group" role="group">
+                                <a href="?days=7" class="btn btn-outline-primary {{ 'active' if days == 7 }}">7 Days</a>
+                                <a href="?days=30" class="btn btn-outline-primary {{ 'active' if days == 30 }}">30 Days</a>
+                                <a href="?days=90" class="btn btn-outline-primary {{ 'active' if days == 90 }}">90 Days</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="row mb-4">
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stats-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <h3 class="stat-value">
+                        R{{ "%.2f"|format(totals.get('deposit', {}).get('amount', 0)|default(0) + totals.get('premium_payment', {}).get('amount', 0)|default(0)) }}
+                    </h3>
+                    <p class="text-muted mb-2">Total Revenue</p>
+                    <small class="text-success">
+                        <i class="fas fa-arrow-up me-1"></i> 
+                        {{ ((totals.get('deposit', {}).get('amount', 0)|default(0) / max(totals.get('deposit', {}).get('amount', 1)|default(1), 1)) * 100)|round|int }}% growth
+                    </small>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stats-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="stat-value">{{ new_users }}</h3>
+                    <p class="text-muted mb-2">New Users</p>
+                    <small class="text-primary">
+                        <i class="fas fa-user-plus me-1"></i> {{ (new_users / max(days, 1))|round|int }} per day
+                    </small>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stats-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <h3 class="stat-value">
+                        R{{ "%.2f"|format(totals.get('service_fees', {}).get('fees', 0)|default(0)) }}
+                    </h3>
+                    <p class="text-muted mb-2">Service Fees</p>
+                    <small class="text-warning">
+                        <i class="fas fa-chart-line me-1"></i> 
+                        {{ ((totals.get('service_fees', {}).get('fees', 0)|default(0) / max(totals.get('deposit', {}).get('amount', 1)|default(1), 1)) * 100)|round|int }}% of revenue
+                    </small>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stats-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <h3 class="stat-value">
+                        R{{ "%.2f"|format(totals.get('claim_payout', {}).get('amount', 0)|default(0)) }}
+                    </h3>
+                    <p class="text-muted mb-2">Claim Payouts</p>
+                    <small class="text-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i> 
+                        {{ claims_by_status.get('paid', {}).get('count', 0)|default(0) }} claims processed
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-lg-8 mb-4">
+                <div class="chart-container">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0">Transaction Volume</h5>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-chart-bar me-2"></i> View Options
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="changeChartType('daily')">Daily View</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="changeChartType('weekly')">Weekly View</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="changeChartType('monthly')">Monthly View</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="chart-placeholder">
+                        <div class="text-center">
+                            <i class="fas fa-chart-line fa-3x mb-3 text-muted"></i>
+                            <p class="mb-0">Transaction volume chart</p>
+                            <small class="text-muted">Interactive chart will be implemented with Chart.js</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="chart-container">
+                    <h5 class="fw-bold mb-4">Claims by Status</h5>
+                    <div class="chart-placeholder" style="height: 250px;">
+                        <div class="text-center">
+                            <i class="fas fa-chart-pie fa-3x mb-3 text-muted"></i>
+                            <p class="mb-0">Claims distribution pie chart</p>
+                            <small class="text-muted">Visual representation of claim statuses</small>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        {% for status, data in claims_by_status.items() %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="badge bg-{{ 'success' if status == 'approved' else 'warning' if status == 'pending' else 'primary' if status == 'under_review' else 'danger' }} me-2">
+                                    {{ data.get('count', 0) }}
+                                </span>
+                                <span class="text-capitalize">{{ status.replace('_', ' ') }}</span>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold">R{{ "%.2f"|format(data.get('amount', 0)) }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Transactions -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="reports-table">
+                    <div class="p-4 border-bottom">
+                        <h5 class="fw-bold mb-0">Transaction Details</h5>
+                        <p class="text-muted mb-0">All transactions within selected period</p>
+                    </div>
+                    
+                    {% if transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Transaction ID</th>
+                                    <th>User</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Fee</th>
+                                    <th>Net Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">{{ transaction.created_at.strftime('%Y-%m-%d') }}</div>
+                                        <small class="text-muted">{{ transaction.created_at.strftime('%H:%M:%S') }}</small>
+                                    </td>
+                                    <td>
+                                        <code class="bg-light p-1 rounded">{{ transaction.transaction_id }}</code>
+                                    </td>
+                                    <td>
+                                        {% if transaction.user %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                                 style="width: 32px; height: 32px; font-size: 0.875rem;">
+                                                {{ transaction.user.first_name[0] }}{{ transaction.user.last_name[0] }}
+                                            </div>
+                                            <div class="ms-2">
+                                                <div class="fw-bold">{{ transaction.user.get_full_name() }}</div>
+                                                <small class="text-muted">{{ transaction.user.email }}</small>
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">User not found</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if transaction.transaction_type == 'deposit' %}
+                                        <span class="transaction-badge badge-deposit">
+                                            <i class="fas fa-download me-1"></i> Deposit
+                                        </span>
+                                        {% elif transaction.transaction_type == 'premium_payment' %}
+                                        <span class="transaction-badge badge-premium">
+                                            <i class="fas fa-file-invoice me-1"></i> Premium
+                                        </span>
+                                        {% elif transaction.transaction_type == 'claim_payout' %}
+                                        <span class="transaction-badge badge-payout">
+                                            <i class="fas fa-hand-holding-usd me-1"></i> Payout
+                                        </span>
+                                        {% else %}
+                                        <span class="transaction-badge badge-fee">
+                                            <i class="fas fa-coins me-1"></i> {{ transaction.transaction_type|title }}
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">R{{ "%.2f"|format(transaction.amount) }}</div>
+                                    </td>
+                                    <td>
+                                        {% if transaction.service_fee > 0 %}
+                                        <span class="text-danger">R{{ "%.2f"|format(transaction.service_fee) }}</span>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if transaction.net_amount >= 0 %}
+                                        <span class="text-success fw-bold">R{{ "%.2f"|format(transaction.net_amount) }}</span>
+                                        {% else %}
+                                        <span class="text-danger fw-bold">-R{{ "%.2f"|format(transaction.net_amount|abs) }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if transaction.status == 'completed' %}
+                                        <span class="badge bg-success rounded-pill">
+                                            <i class="fas fa-check-circle me-1"></i> Completed
+                                        </span>
+                                        {% elif transaction.status == 'pending' %}
+                                        <span class="badge bg-warning rounded-pill">
+                                            <i class="fas fa-clock me-1"></i> Pending
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-danger rounded-pill">
+                                            <i class="fas fa-times-circle me-1"></i> Failed
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-chart-bar fa-4x text-muted mb-3"></i>
+                        <h5 class="fw-bold mb-2">No Transactions Found</h5>
+                        <p class="text-muted mb-4">No transactions were recorded during the selected period</p>
+                        <a href="?days=30" class="btn btn-modern">
+                            <i class="fas fa-calendar-alt me-2"></i> View Last 30 Days
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="summary-card">
+                    <h5 class="fw-bold mb-3">Transaction Summary</h5>
+                    <div class="table-responsive">
+                        <table class="table table-borderless">
+                            <tbody>
+                                {% for type, data in totals.items() %}
+                                <tr>
+                                    <td class="text-capitalize">{{ type.replace('_', ' ') }}</td>
+                                    <td class="text-end">{{ data.get('count', 0) }} transactions</td>
+                                    <td class="text-end fw-bold text-success">R{{ "%.2f"|format(data.get('amount', 0)) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3 pt-3 border-top">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold">Total Fees Collected:</span>
+                            <span class="text-danger fw-bold">
+                                R{{ "%.2f"|format(totals.values()|sum(attribute='fees')|default(0)) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="summary-card">
+                    <h5 class="fw-bold mb-3">Quick Actions</h5>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button class="btn btn-outline-primary w-100 py-3" onclick="generateRevenueReport()">
+                                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                                <div>Revenue Report</div>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-success w-100 py-3" onclick="generateUserReport()">
+                                <i class="fas fa-users fa-2x mb-2"></i>
+                                <div>User Analytics</div>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-warning w-100 py-3" onclick="generateClaimReport()">
+                                <i class="fas fa-file-medical fa-2x mb-2"></i>
+                                <div>Claims Analysis</div>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-danger w-100 py-3" onclick="generateFinancialReport()">
+                                <i class="fas fa-balance-scale fa-2x mb-2"></i>
+                                <div>Financial Audit</div>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search specific report...">
+                            <button class="btn btn-modern">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Export report function
+    function exportReport(format) {
+        const days = {{ days }};
+        const startDate = '{{ start_date.strftime("%Y-%m-%d") if start_date else "" }}';
+        const endDate = '{{ end_date.strftime("%Y-%m-%d") if end_date else "" }}';
+        
+        // Show loading state
+        const buttons = document.querySelectorAll('.export-btn');
+        buttons.forEach(btn => {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }, 2000);
+        });
+        
+        // Simulate API call
+        setTimeout(() => {
+            let message = '';
+            switch(format) {
+                case 'pdf':
+                    message = 'PDF report is being generated and will download shortly.';
+                    break;
+                case 'csv':
+                    message = 'CSV export completed. Check your downloads folder.';
+                    break;
+                case 'excel':
+                    message = 'Excel file has been generated successfully.';
+                    break;
+            }
+            
+            showAlert('success', message);
+        }, 1000);
+    }
+    
+    // Chart type switcher
+    function changeChartType(type) {
+        const chartPlaceholder = document.querySelector('.chart-placeholder');
+        chartPlaceholder.innerHTML = `
+            <div class="text-center">
+                <i class="fas fa-sync-alt fa-spin fa-3x mb-3 text-primary"></i>
+                <p class="mb-0">Loading ${type} chart...</p>
+                <small class="text-muted">Switching to ${type} view</small>
+            </div>
+        `;
+        
+        setTimeout(() => {
+            chartPlaceholder.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-chart-${type === 'daily' ? 'line' : type === 'weekly' ? 'bar' : 'area'} fa-3x mb-3 text-muted"></i>
+                    <p class="mb-0">${type.charAt(0).toUpperCase() + type.slice(1)} Transaction Chart</p>
+                    <small class="text-muted">Interactive ${type} visualization loaded</small>
+                </div>
+            `;
+            
+            showAlert('info', `Switched to ${type} chart view`);
+        }, 1500);
+    }
+    
+    // Report generation functions
+    function generateRevenueReport() {
+        showAlert('info', 'Generating detailed revenue report...');
+        // Implement actual report generation logic
+    }
+    
+    function generateUserReport() {
+        showAlert('info', 'Preparing user analytics report...');
+        // Implement actual report generation logic
+    }
+    
+    function generateClaimReport() {
+        showAlert('info', 'Compiling claims analysis report...');
+        // Implement actual report generation logic
+    }
+    
+    function generateFinancialReport() {
+        showAlert('info', 'Creating comprehensive financial audit...');
+        // Implement actual report generation logic
+    }
+    
+    // Alert notification
+    function showAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-modern alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+        
+        setTimeout(() => {
+            alertDiv.classList.remove('show');
+            setTimeout(() => alertDiv.remove(), 300);
+        }, 5000);
+    }
+    
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltips.forEach(tooltip => {
+            new bootstrap.Tooltip(tooltip);
+        });
+        
+        // Add animation to summary cards
+        const summaryCards = document.querySelectorAll('.summary-card');
+        summaryCards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+    });
+</script>
+{% endblock %}

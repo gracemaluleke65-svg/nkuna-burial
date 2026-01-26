@@ -1,0 +1,655 @@
+{% extends "base.html" %}
+
+{% block title %}Pay Premium - Nkuna Burial Society{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .payment-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+    }
+    
+    .payment-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-lg);
+        transition: var(--transition);
+        border: 2px solid transparent;
+    }
+    
+    .payment-card:hover {
+        border-color: var(--primary-teal);
+        transform: translateY(-5px);
+    }
+    
+    .payment-summary {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.05));
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 2px solid #10b981;
+    }
+    
+    .payment-option {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .payment-option:hover {
+        border-color: var(--primary-teal);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .payment-option.selected {
+        border-color: var(--primary-teal);
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(251, 191, 36, 0.02));
+    }
+    
+    .payment-option.selected::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+    }
+    
+    .amount-input {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    
+    .amount-input:focus {
+        border-color: var(--primary-teal);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .fee-breakdown {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(251, 191, 36, 0.02));
+        border-radius: 12px;
+        padding: 1rem;
+        border: 1px solid rgba(14, 165, 233, 0.2);
+    }
+    
+    .fee-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .fee-item:last-child {
+        border-bottom: none;
+    }
+    
+    .fee-total {
+        background: linear-gradient(135deg, var(--primary-teal), #38bdf8);
+        color: white;
+        border-radius: 10px;
+        padding: 1rem;
+        font-weight: 600;
+    }
+    
+    .balance-info {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+        border-radius: 12px;
+        padding: 1rem;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+    
+    /* Member Status Indicators */
+    .member-status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .member-status-active {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .member-status-inactive {
+        background: linear-gradient(135deg, rgba(108, 117, 125, 0.15), rgba(108, 117, 125, 0.05));
+        color: #6c757d;
+        border: 1px solid rgba(108, 117, 125, 0.3);
+    }
+    
+    .member-status-claim {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    /* Warning for members with claims */
+    .claim-warning {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .payment-card {
+            padding: 1.5rem;
+        }
+        
+        .payment-header {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Back Button -->
+    <div class="mb-4">
+        <a href="{{ url_for('main.view_policy', policy_id=policy.id) }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i> Back to Policy
+        </a>
+    </div>
+
+    <!-- Payment Header -->
+    <div class="payment-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 fw-bold mb-3">
+                    <i class="fas fa-credit-card me-2"></i> Premium Payment
+                </h1>
+                <p class="lead mb-0">Policy: {{ policy.policy_name }} ({{ policy.policy_number }})</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="coverage-badge">
+                    R{{ "%.2f"|format(policy.coverage_amount) }} Coverage
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Status Warning -->
+    {% if inactive_members|selectattr('has_claim', 'equalto', True)|list|length > 0 %}
+    <div class="claim-warning mb-4">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-triangle text-warning fa-2x me-3"></i>
+            <div>
+                <h5 class="fw-bold text-warning mb-1">Claim Status Notice</h5>
+                <p class="mb-0">
+                    {{ inactive_members|selectattr('has_claim', 'equalto', True)|list|length }} member(s) have processed claims 
+                    and are no longer covered. Your premium has been adjusted accordingly.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Payment Form -->
+        <div class="col-lg-8">
+            <div class="payment-card">
+                <h3 class="fw-bold mb-4">Payment Details</h3>
+                
+                <form method="POST" action="{{ url_for('main.pay_premium', policy_id=policy.id) }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Policy Selection (hidden since we're on specific policy) -->
+                    <div class="mb-4 d-none">
+                        {{ form.policy_id.label(class="form-label fw-bold") }}
+                        {{ form.policy_id(class="form-select") }}
+                    </div>
+                    
+                    <!-- Amount -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Payment Amount (R)</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-light">R</span>
+                            {{ form.amount(class="form-control amount-input", value=total_premium, step="0.01", min=total_premium) }}
+                        </div>
+                        <div class="form-text">
+                            Minimum payment: R{{ "%.2f"|format(total_premium) }}
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Options -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold mb-3">Payment Options</label>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="payment-option" onclick="setAmount({{ total_premium }})">
+                                    <div class="text-center">
+                                        <div class="mb-2">
+                                            <i class="fas fa-calendar-check fa-2x text-primary"></i>
+                                        </div>
+                                        <h5 class="fw-bold">Standard</h5>
+                                        <p class="text-muted mb-0">
+                                            Pay R{{ "%.2f"|format(total_premium) }}<br>
+                                            <small class="text-success">Active members only</small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="payment-option" onclick="setAmount({{ total_premium * 3 }})">
+                                    <div class="text-center">
+                                        <div class="mb-2">
+                                            <i class="fas fa-calendar-alt fa-2x text-success"></i>
+                                        </div>
+                                        <h5 class="fw-bold">Quarterly</h5>
+                                        <p class="text-muted mb-0">
+                                            Pay R{{ "%.2f"|format(total_premium * 3) }}<br>
+                                            <small class="text-success">Save on fees</small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="payment-option" onclick="setAmount({{ total_premium * 6 }})">
+                                    <div class="text-center">
+                                        <div class="mb-2">
+                                            <i class="fas fa-calendar-day fa-2x text-warning"></i>
+                                        </div>
+                                        <h5 class="fw-bold">Semi-Annual</h5>
+                                        <p class="text-muted mb-0">
+                                            Pay R{{ "%.2f"|format(total_premium * 6) }}<br>
+                                            <small class="text-warning">Best value</small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Member Status Summary -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3">Members Covered</h5>
+                        <div class="row g-2">
+                            <!-- Policy Owner -->
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                                    <div>
+                                        <strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong>
+                                        <small class="text-muted d-block">Policy Owner</small>
+                                    </div>
+                                    <span class="member-status-indicator member-status-active">
+                                        <i class="fas fa-check-circle me-1"></i> Active
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Active Members -->
+                            {% for member in active_members %}
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                                    <div>
+                                        <strong>{{ member.first_name }} {{ member.last_name }}</strong>
+                                        <small class="text-muted d-block">{{ member.relationship|title }} • Age {{ member.calculate_age() }}</small>
+                                    </div>
+                                    <span class="member-status-indicator member-status-active">
+                                        <i class="fas fa-check-circle me-1"></i> Active
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <!-- Inactive Members (if any) -->
+                            {% if inactive_members %}
+                                {% for member in inactive_members %}
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between align-items-center p-2 bg-secondary bg-opacity-10 rounded opacity-75">
+                                        <div>
+                                            <strong>{{ member.first_name }} {{ member.last_name }}</strong>
+                                            <small class="text-muted d-block">{{ member.relationship|title }} • Age {{ member.calculate_age() }}</small>
+                                        </div>
+                                        {% if member.has_claim %}
+                                            <span class="member-status-indicator member-status-claim">
+                                                <i class="fas fa-hand-holding-usd me-1"></i> Claim Processed
+                                            </span>
+                                        {% else %}
+                                            <span class="member-status-indicator member-status-inactive">
+                                                <i class="fas fa-user-times me-1"></i> Inactive
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Method -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Payment Method</label>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Payment will be deducted from your virtual balance. 
+                            <a href="{{ url_for('main.deposit') }}" class="alert-link">Deposit funds</a> if needed.
+                        </div>
+                    </div>
+                    
+                    <!-- Balance Info -->
+                    <div class="balance-info mb-4">
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted d-block">Current Balance</small>
+                                <h4 class="fw-bold text-success">R{{ "%.2f"|format(current_user.virtual_balance) }}</h4>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Required Amount</small>
+                                <h4 class="fw-bold" id="requiredAmount">R{{ "%.2f"|format(total_premium) }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-modern btn-lg" id="submitButton">
+                            <i class="fas fa-lock me-2"></i> Confirm Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Payment Summary -->
+        <div class="col-lg-4">
+            <div class="payment-card">
+                <h3 class="fw-bold mb-4">Payment Summary</h3>
+                
+                <!-- Policy Details -->
+                <div class="payment-summary mb-4">
+                    <h5 class="fw-bold mb-3">{{ policy.policy_name }}</h5>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Policy Number</small>
+                            <strong>{{ policy.policy_number }}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Coverage</small>
+                            <strong class="text-success">R{{ "%.2f"|format(policy.coverage_amount) }}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Premium Breakdown -->
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-3">Premium Breakdown</h5>
+                    <div class="fee-breakdown">
+                        <!-- Policy Owner -->
+                        <div class="fee-item">
+                            <span>Policy Owner Premium</span>
+                            <span class="fw-bold">R{{ "%.2f"|format(policy.monthly_premium) }}</span>
+                        </div>
+                        
+                        <!-- Active Members -->
+                        {% for member in active_members %}
+                        <div class="fee-item">
+                            <span>{{ member.first_name }} {{ member.last_name|first }}. ({{ member.relationship }})</span>
+                            <span class="fw-bold">R{{ "%.2f"|format(member.monthly_premium) }}</span>
+                        </div>
+                        {% endfor %}
+                        
+                        <!-- Total -->
+                        <div class="fee-item pt-3">
+                            <span class="fw-bold">Total Monthly Premium</span>
+                            <span class="fw-bold text-success">R{{ "%.2f"|format(total_premium) }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Fee Calculation -->
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-3">Fee Calculation</h5>
+                    <div class="fee-breakdown">
+                        <div class="fee-item">
+                            <span>Payment Amount</span>
+                            <span class="fw-bold" id="paymentAmount">R{{ "%.2f"|format(total_premium) }}</span>
+                        </div>
+                        <div class="fee-item">
+                            <span>Service Fee (2.5%)</span>
+                            <span class="fw-bold text-warning" id="serviceFee">R{{ "%.2f"|format(total_premium * 0.025) }}</span>
+                        </div>
+                        <div class="fee-item pt-3">
+                            <span class="fw-bold">Total Deduction</span>
+                            <span class="fw-bold text-danger" id="totalDeduction">R{{ "%.2f"|format(total_premium * 1.025) }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Next Payment Date -->
+                <div class="alert alert-warning">
+                    <h6 class="fw-bold mb-2">
+                        <i class="fas fa-calendar-check me-2"></i> Next Payment
+                    </h6>
+                    <p class="mb-0">
+                        After payment, next due date will be:
+                        <strong>{{ next_payment_after.strftime('%d %B %Y') }}</strong>
+                    </p>
+                </div>
+                
+                <!-- Member Impact Info -->
+                {% if inactive_members|selectattr('has_claim', 'equalto', True)|list|length > 0 %}
+                <div class="alert alert-info mt-3">
+                    <h6 class="fw-bold mb-2">
+                        <i class="fas fa-info-circle me-2"></i> Member Status Update
+                    </h6>
+                    <p class="mb-0 small">
+                        Your premium has been adjusted to exclude members with processed claims.
+                        These members are no longer covered under this policy.
+                    </p>
+                </div>
+                {% endif %}
+                
+                <!-- Need Help -->
+                <div class="text-center">
+                    <a href="#" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-question-circle me-2"></i> Need Help?
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const amountInput = document.querySelector('#amount');
+    const paymentAmount = document.getElementById('paymentAmount');
+    const serviceFee = document.getElementById('serviceFee');
+    const totalDeduction = document.getElementById('totalDeduction');
+    const requiredAmount = document.getElementById('requiredAmount');
+    const submitButton = document.getElementById('submitButton');
+    const paymentOptions = document.querySelectorAll('.payment-option');
+    
+    // Set selected payment option
+    function selectPaymentOption(option) {
+        paymentOptions.forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        option.classList.add('selected');
+    }
+    
+    // Set amount function
+    window.setAmount = function(amount) {
+        amountInput.value = amount.toFixed(2);
+        updateCalculations();
+        
+        // Select the corresponding payment option
+        const option = event.target.closest('.payment-option');
+        if (option) {
+            selectPaymentOption(option);
+        }
+    };
+    
+    // Update calculations based on amount
+    function updateCalculations() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const fee = Math.max(amount * 0.025, 10); // 2.5% with minimum R10
+        const total = amount + fee;
+        
+        // Update display
+        paymentAmount.textContent = `R${amount.toFixed(2)}`;
+        serviceFee.textContent = `R${fee.toFixed(2)}`;
+        totalDeduction.textContent = `R${total.toFixed(2)}`;
+        requiredAmount.textContent = `R${amount.toFixed(2)}`;
+        
+        // Check if user has sufficient balance
+        const userBalance = {{ current_user.virtual_balance|default(0)|tojson }};
+        if (userBalance >= total) {
+            requiredAmount.className = 'fw-bold text-success';
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<i class="fas fa-lock me-2"></i> Confirm Payment';
+        } else {
+            requiredAmount.className = 'fw-bold text-danger';
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i> Insufficient Balance';
+        }
+        
+        // Highlight if below minimum
+        const minAmount = {{ total_premium|default(0)|tojson }};
+        if (amount < minAmount) {
+            amountInput.classList.add('is-invalid');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> Below Minimum Amount';
+        } else {
+            amountInput.classList.remove('is-invalid');
+        }
+    }
+    
+    // Initialize calculations
+    updateCalculations();
+    
+    // Listen for amount changes
+    amountInput.addEventListener('input', updateCalculations);
+    
+    // Auto-select standard payment option
+    if (paymentOptions.length > 0) {
+        selectPaymentOption(paymentOptions[0]);
+    }
+    
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const amount = parseFloat(amountInput.value);
+        const minAmount = {{ total_premium|default(0)|tojson }};
+        const userBalance = {{ current_user.virtual_balance|default(0)|tojson }};
+        const fee = Math.max(amount * 0.025, 10);
+        const total = amount + fee;
+        
+        if (amount < minAmount) {
+            e.preventDefault();
+            showAlert('Payment amount must be at least R' + minAmount.toFixed(2), 'danger');
+            return;
+        }
+        
+        if (userBalance < total) {
+            e.preventDefault();
+            showAlert('Insufficient balance. Please deposit R' + (total - userBalance).toFixed(2) + ' more.', 'danger');
+            return;
+        }
+        
+        // Confirm payment
+        if (!confirm(`Confirm payment of R${amount.toFixed(2)} (including R${fee.toFixed(2)} service fee)?`)) {
+            e.preventDefault();
+        }
+    });
+    
+    // Show alert function
+    function showAlert(message, type) {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show mt-3`;
+        alert.innerHTML = `
+            <i class="fas fa-exclamation-circle me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        form.prepend(alert);
+        
+        setTimeout(() => {
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 300);
+        }, 5000);
+    }
+    
+    // Animate payment options on hover
+    paymentOptions.forEach(option => {
+        option.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px) scale(1.05)';
+        });
+        
+        option.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('selected')) {
+                this.style.transform = 'translateY(0) scale(1)';
+            }
+        });
+    });
+    
+    // Add visual feedback when amount is changed
+    amountInput.addEventListener('focus', function() {
+        this.style.transform = 'translateY(-3px)';
+        this.style.boxShadow = '0 10px 20px rgba(14, 165, 233, 0.2)';
+    });
+    
+    amountInput.addEventListener('blur', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = 'none';
+    });
+    
+    // Auto-refresh to check for member status changes
+    setInterval(() => {
+        fetch('{{ url_for("main.pay_premium", policy_id=policy.id) }}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Check if member counts have changed
+            const newActiveCount = $(html).find('.member-status-indicator.member-status-active').length;
+            const currentActiveCount = $('.member-status-indicator.member-status-active').length;
+            
+            if (newActiveCount !== currentActiveCount) {
+                // Member status changed, reload page
+                location.reload();
+            }
+        })
+        .catch(error => console.log('Auto-refresh failed:', error));
+    }, 30000);
+});
+</script>
+{% endblock %}

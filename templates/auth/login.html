@@ -1,0 +1,573 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Nkuna Burial Society{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Login Section */
+    .login-section {
+        min-height: calc(100vh - 300px);
+        display: flex;
+        align-items: center;
+        padding: 4rem 0;
+        background: linear-gradient(135deg, 
+            rgba(248, 250, 252, 0.9) 0%, 
+            rgba(241, 245, 249, 0.9) 100%),
+            url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%230ea5e9' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+    
+    /* Login Card */
+    .login-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: var(--transition);
+        position: relative;
+    }
+    
+    .login-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.15);
+    }
+    
+    .login-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+        animation: shimmer 2s infinite linear;
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: -200px 0; }
+        100% { background-position: 200px 0; }
+    }
+    
+    .login-header {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, #1e3a8a 100%);
+        padding: 2.5rem;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .login-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 4s infinite alternate;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.1); }
+    }
+    
+    .login-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        transition: var(--transition);
+    }
+    
+    .login-icon:hover {
+        transform: rotateY(180deg) scale(1.1);
+        border-color: var(--accent-gold);
+        background: rgba(251, 191, 36, 0.2);
+    }
+    
+    /* Form Elements */
+    .form-group-modern {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label-modern {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        transition: var(--transition);
+    }
+    
+    .form-input-modern {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        padding-left: 3rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: var(--card-bg);
+        color: var(--text-dark);
+        font-size: 1rem;
+        transition: var(--transition);
+        position: relative;
+    }
+    
+    .form-input-modern:focus {
+        outline: none;
+        border-color: var(--primary-teal);
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .form-input-modern:hover {
+        border-color: #94a3b8;
+        transform: translateY(-2px);
+    }
+    
+    .input-icon {
+        position: absolute;
+        left: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        transition: var(--transition);
+    }
+    
+    .form-input-modern:focus + .input-icon {
+        color: var(--primary-teal);
+    }
+    
+    /* Password Toggle */
+    .password-toggle {
+        position: absolute;
+        right: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: var(--transition);
+        z-index: 2;
+    }
+    
+    .password-toggle:hover {
+        color: var(--primary-teal);
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    /* Remember Me Checkbox */
+    .checkbox-modern {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+        transition: var(--transition);
+    }
+    
+    .checkbox-modern:hover {
+        transform: translateX(5px);
+    }
+    
+    .checkbox-modern input[type="checkbox"] {
+        display: none;
+    }
+    
+    .checkmark {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #e2e8f0;
+        border-radius: 6px;
+        margin-right: 10px;
+        position: relative;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .checkmark::after {
+        content: '✓';
+        color: white;
+        font-size: 12px;
+        opacity: 0;
+        transition: var(--transition);
+    }
+    
+    .checkbox-modern input[type="checkbox"]:checked ~ .checkmark {
+        background: var(--primary-teal);
+        border-color: var(--primary-teal);
+    }
+    
+    .checkbox-modern input[type="checkbox"]:checked ~ .checkmark::after {
+        opacity: 1;
+    }
+    
+    /* Alternative Login Options */
+    .alt-login-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: white;
+        color: var(--text-dark);
+        font-weight: 600;
+        transition: var(--transition);
+        text-decoration: none;
+    }
+    
+    .alt-login-btn:hover {
+        border-color: var(--primary-teal);
+        color: var(--primary-teal);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Divider */
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 2rem 0;
+        color: #94a3b8;
+    }
+    
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .divider span {
+        padding: 0 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    /* Login Button Animation */
+    .login-btn {
+        background: linear-gradient(135deg, var(--primary-teal) 0%, #0284c7 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        width: 100%;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3);
+    }
+    
+    .login-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: 0.5s;
+    }
+    
+    .login-btn:hover::before {
+        left: 100%;
+    }
+    
+    .login-btn:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 15px 30px rgba(14, 165, 233, 0.4);
+        background: linear-gradient(135deg, #0284c7 0%, var(--primary-teal) 100%);
+    }
+    
+    .login-btn:active {
+        transform: translateY(-1px);
+    }
+    
+    /* Registration Link */
+    .register-link {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #e2e8f0;
+    }
+    
+    .register-link a {
+        color: var(--primary-teal);
+        text-decoration: none;
+        font-weight: 600;
+        position: relative;
+        transition: var(--transition);
+    }
+    
+    .register-link a::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--accent-gold);
+        transition: var(--transition);
+    }
+    
+    .register-link a:hover {
+        color: var(--accent-gold);
+    }
+    
+    .register-link a:hover::after {
+        width: 100%;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .login-section {
+            padding: 2rem 0;
+        }
+        
+        .login-card {
+            margin: 0 1rem;
+        }
+        
+        .login-header {
+            padding: 2rem 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="login-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="login-card">
+                    <!-- Header -->
+                    <div class="login-header">
+                        <div class="login-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h1 class="display-6 fw-bold mb-2">Welcome Back</h1>
+                        <p class="text-light opacity-75">Sign in to access your burial society account</p>
+                    </div>
+                    
+                    <!-- Form -->
+                    <div class="p-4 p-md-5">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }} alert-modern alert-dismissible fade show mb-4" role="alert">
+                                        {% if category == 'success' %}
+                                            <i class="fas fa-check-circle me-2"></i>
+                                        {% elif category == 'danger' %}
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                        {% elif category == 'warning' %}
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                        {% else %}
+                                            <i class="fas fa-info-circle me-2"></i>
+                                        {% endif %}
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <form method="POST" action="{{ url_for('auth.login') }}">
+                            {{ form.hidden_tag() }}
+                            
+                            <!-- Email Field -->
+                            <div class="form-group-modern">
+                                <label for="email" class="form-label-modern">
+                                    <i class="fas fa-envelope me-2"></i>Email Address
+                                </label>
+                                <div class="position-relative">
+                                    <i class="fas fa-envelope input-icon"></i>
+                                    <input type="email" 
+                                           class="form-input-modern" 
+                                           id="email" 
+                                           name="email" 
+                                           placeholder="Enter your email address" 
+                                           required
+                                           value="{{ form.email.data if form.email.data }}">
+                                </div>
+                                {% if form.email.errors %}
+                                    <div class="text-danger mt-2 small">
+                                        {% for error in form.email.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Password Field -->
+                            <div class="form-group-modern">
+                                <label for="password" class="form-label-modern">
+                                    <i class="fas fa-lock me-2"></i>Password
+                                </label>
+                                <div class="position-relative">
+                                    <i class="fas fa-lock input-icon"></i>
+                                    <input type="password" 
+                                           class="form-input-modern" 
+                                           id="password" 
+                                           name="password" 
+                                           placeholder="Enter your password" 
+                                           required>
+                                    <button type="button" class="password-toggle" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                {% if form.password.errors %}
+                                    <div class="text-danger mt-2 small">
+                                        {% for error in form.password.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Remember Me & Forgot Password -->
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <label class="checkbox-modern">
+                                    {{ form.remember() }}
+                                    <span class="checkmark"></span>
+                                    <span class="text-muted">Remember me</span>
+                                </label>
+                                <a href="#" class="text-decoration-none text-primary" style="color: var(--primary-teal) !important;">
+                                    <i class="fas fa-key me-1"></i>Forgot password?
+                                </a>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <button type="submit" class="login-btn mb-4">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                            </button>
+                            
+                            <!-- Alternative Login Options -->
+                            
+                        </form>
+                        
+                        <!-- Registration Link -->
+                        <div class="register-link">
+                            <p class="text-muted mb-2">Don't have an account yet?</p>
+                            <a href="{{ url_for('auth.register') }}" class="d-inline-flex align-items-center">
+                                <i class="fas fa-user-plus me-2"></i>Create New Account
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                        
+                        <!-- Back to Home -->
+                        <div class="text-center mt-4">
+                            <a href="{{ url_for('main.index') }}" class="text-decoration-none text-muted">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security Info -->
+                <div class="mt-4 text-center">
+                    <p class="text-muted small">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Your login is secured with 256-bit SSL encryption
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password toggle functionality
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                const icon = this.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            });
+        }
+        
+        // Form input animations
+        const formInputs = document.querySelectorAll('.form-input-modern');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.querySelector('.input-icon').style.color = 'var(--primary-teal)';
+                this.parentElement.style.transform = 'translateY(-2px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.parentElement.querySelector('.input-icon').style.color = '#94a3b8';
+                }
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // Remember me checkbox animation
+        const rememberCheckbox = document.querySelector('.checkbox-modern input[type="checkbox"]');
+        if (rememberCheckbox) {
+            rememberCheckbox.addEventListener('change', function() {
+                const checkmark = this.parentElement.querySelector('.checkmark');
+                if (this.checked) {
+                    checkmark.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        checkmark.style.transform = 'scale(1)';
+                    }, 200);
+                }
+            });
+        }
+        
+        // Login button animation on form submit
+        const loginForm = document.querySelector('form');
+        const loginBtn = document.querySelector('.login-btn');
+        
+        if (loginForm && loginBtn) {
+            loginForm.addEventListener('submit', function() {
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing In...';
+                loginBtn.disabled = true;
+                loginBtn.style.opacity = '0.8';
+            });
+        }
+        
+        // Add floating label effect
+        formInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const label = this.parentElement.parentElement.querySelector('.form-label-modern');
+                if (this.value) {
+                    label.style.transform = 'translateY(-5px)';
+                    label.style.fontSize = '0.875rem';
+                    label.style.color = 'var(--primary-teal)';
+                } else {
+                    label.style.transform = 'translateY(0)';
+                    label.style.fontSize = '1rem';
+                    label.style.color = 'var(--text-dark)';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

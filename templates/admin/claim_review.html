@@ -1,0 +1,930 @@
+{% extends "base.html" %}
+
+{% block title %}Review Claim - Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Claim Review Specific Styles */
+    .claim-details-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+        border-left: 5px solid;
+        overflow: hidden;
+    }
+    
+    .claim-details-card.pending {
+        border-left-color: var(--warning);
+        border-top: 3px solid var(--warning);
+    }
+    
+    .claim-details-card.under_review {
+        border-left-color: var(--primary-teal);
+        border-top: 3px solid var(--primary-teal);
+    }
+    
+    .claim-details-card.approved {
+        border-left-color: var(--success);
+        border-top: 3px solid var(--success);
+    }
+    
+    .claim-details-card.rejected {
+        border-left-color: var(--danger);
+        border-top: 3px solid var(--danger);
+    }
+    
+    .claim-details-card.paid {
+        border-left-color: var(--accent-gold);
+        border-top: 3px solid var(--accent-gold);
+    }
+    
+    .claim-status-badge {
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        display: inline-block;
+        transition: var(--transition);
+    }
+    
+    .status-pending {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+        color: #f59e0b;
+        border: 2px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    .status-under_review {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.05));
+        color: var(--primary-teal);
+        border: 2px solid rgba(14, 165, 233, 0.3);
+    }
+    
+    .status-approved {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+        color: var(--success);
+        border: 2px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-rejected {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+        color: var(--danger);
+        border: 2px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .status-paid {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.05));
+        color: var(--accent-gold);
+        border: 2px solid rgba(251, 191, 36, 0.3);
+    }
+    
+    .info-box {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(30, 58, 138, 0.05));
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid rgba(14, 165, 233, 0.1);
+        transition: var(--transition);
+    }
+    
+    .info-box:hover {
+        border-color: var(--primary-teal);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .info-label {
+        font-size: 0.875rem;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+    }
+    
+    .info-value {
+        font-size: 1.1rem;
+        color: var(--text-dark);
+        font-weight: 600;
+    }
+    
+    .document-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid #e2e8f0;
+        transition: var(--transition);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .document-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.5s ease;
+    }
+    
+    .document-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .document-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-teal);
+    }
+    
+    .document-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-teal), #38bdf8);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        color: white;
+        transition: var(--transition);
+    }
+    
+    .document-card:hover .document-icon {
+        transform: rotateY(180deg);
+        background: linear-gradient(135deg, var(--accent-gold), #fbbf24);
+    }
+    
+    .action-button {
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        border: none;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .action-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: 0.5s;
+    }
+    
+    .action-button:hover::before {
+        left: 100%;
+    }
+    
+    .btn-approve {
+        background: linear-gradient(135deg, var(--success), #059669);
+        color: white;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-approve:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        background: linear-gradient(135deg, #059669, var(--success));
+    }
+    
+    .btn-reject {
+        background: linear-gradient(135deg, var(--danger), #dc2626);
+        color: white;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+    
+    .btn-reject:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        background: linear-gradient(135deg, #dc2626, var(--danger));
+    }
+    
+    .btn-pay {
+        background: linear-gradient(135deg, var(--accent-gold), #d97706);
+        color: white;
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+    }
+    
+    .btn-pay:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(251, 191, 36, 0.4);
+        background: linear-gradient(135deg, #d97706, var(--accent-gold));
+    }
+    
+    .btn-review {
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        color: white;
+        box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+    }
+    
+    .btn-review:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4);
+        background: linear-gradient(135deg, #0284c7, var(--primary-teal));
+    }
+    
+    .form-control-custom {
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        transition: var(--transition);
+        background: var(--card-bg);
+    }
+    
+    .form-control-custom:focus {
+        border-color: var(--primary-teal);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        background: white;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(to bottom, var(--primary-teal), var(--accent-gold));
+        border-radius: 3px;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -23px;
+        top: 5px;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: var(--primary-teal);
+        border: 3px solid white;
+        box-shadow: 0 0 0 3px var(--primary-teal);
+    }
+    
+    .timeline-item.completed::before {
+        background: var(--success);
+        box-shadow: 0 0 0 3px var(--success);
+    }
+    
+    .timeline-item.pending::before {
+        background: var(--warning);
+        box-shadow: 0 0 0 3px var(--warning);
+    }
+    
+    .timeline-date {
+        font-size: 0.875rem;
+        color: var(--text-light);
+        margin-bottom: 0.25rem;
+    }
+    
+    .amount-display {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(45deg, var(--primary-teal), var(--accent-gold));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        line-height: 1;
+    }
+    
+    .amount-label {
+        font-size: 0.875rem;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .bank-details-card {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(30, 58, 138, 0.04));
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid rgba(14, 165, 233, 0.15);
+        transition: var(--transition);
+    }
+    
+    .bank-details-card:hover {
+        border-color: var(--primary-teal);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    /* Quick Action Buttons */
+    .quick-action-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        border: 2px solid;
+        background: transparent;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .quick-action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .btn-outline-approve {
+        color: var(--success);
+        border-color: var(--success);
+    }
+    
+    .btn-outline-approve:hover {
+        background: var(--success);
+        color: white;
+    }
+    
+    .btn-outline-reject {
+        color: var(--danger);
+        border-color: var(--danger);
+    }
+    
+    .btn-outline-reject:hover {
+        background: var(--danger);
+        color: white;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .amount-display {
+            font-size: 2rem;
+        }
+        
+        .timeline {
+            padding-left: 20px;
+        }
+        
+        .timeline::before {
+            left: 2px;
+        }
+        
+        .timeline-item::before {
+            left: -17px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="gradient-text display-6 fw-bold mb-2">Claim Review</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_claims') }}">Claims Management</a></li>
+                    <li class="breadcrumb-item active">Claim #{{ claim.claim_number }}</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <span class="claim-status-badge status-{{ claim.status }}">
+                {{ claim.status.replace('_', ' ').title() }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card-modern p-3">
+                <div class="d-flex flex-wrap gap-2">
+                    {% if claim.status != 'approved' and claim.status != 'rejected' %}
+                    <form method="POST" action="{{ url_for('admin.review_claim', claim_id=claim.id) }}" class="d-inline">
+                        <input type="hidden" name="status" value="approved">
+                        <input type="hidden" name="admin_notes" value="Claim approved by admin">
+                        <button type="submit" class="quick-action-btn btn-outline-approve">
+                            <i class="fas fa-check-circle"></i> Approve Claim
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    {% if claim.status != 'rejected' and claim.status != 'paid' %}
+                    <form method="POST" action="{{ url_for('admin.review_claim', claim_id=claim.id) }}" class="d-inline">
+                        <input type="hidden" name="status" value="rejected">
+                        <input type="hidden" name="admin_notes" value="Claim rejected by admin">
+                        <button type="submit" class="quick-action-btn btn-outline-reject">
+                            <i class="fas fa-times-circle"></i> Reject Claim
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    {% if claim.status == 'approved' and claim.status != 'paid' %}
+                    <form method="POST" action="{{ url_for('admin.review_claim', claim_id=claim.id) }}" class="d-inline">
+                        <input type="hidden" name="status" value="paid">
+                        <input type="hidden" name="admin_notes" value="Payout processed">
+                        <button type="submit" class="btn btn-pay">
+                            <i class="fas fa-money-check-alt"></i> Process Payout
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('admin.manage_claims') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Back to Claims
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column: Claim Details -->
+        <div class="col-lg-8">
+            <!-- Claim Information Card -->
+            <div class="card-modern claim-details-card {{ claim.status }} mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <h3 class="fw-bold mb-1">Claim #{{ claim.claim_number }}</h3>
+                            <p class="text-muted mb-0">Submitted: {{ claim.created_at.strftime('%d %B %Y at %H:%M') }}</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="amount-display mb-1">R{{ "%.2f"|format(claim.claim_amount) }}</div>
+                            <div class="amount-label">Total Claim Amount</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="info-box h-100">
+                                <div class="info-label">Deceased Information</div>
+                                <div class="info-value">{{ claim.deceased_name }}</div>
+                                {% if claim.covered_member %}
+                                <small class="text-muted">Covered Member ({{ claim.covered_member.relationship }})</small>
+                                {% else %}
+                                <small class="text-muted">Policy Owner</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-box h-100">
+                                <div class="info-label">Dates</div>
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <small class="text-muted">Date of Death</small>
+                                        <div class="info-value">{{ claim.date_of_death.strftime('%d %b %Y') }}</div>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted">Date of Burial</small>
+                                        <div class="info-value">{{ claim.date_of_burial.strftime('%d %b %Y') }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="info-box h-100">
+                                <div class="info-label">Cause of Death</div>
+                                <div class="info-value">{{ claim.cause_of_death or 'Not specified' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-box h-100">
+                                <div class="info-label">Place of Death</div>
+                                <div class="info-value">{{ claim.place_of_death or 'Not specified' }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if claim.admin_notes %}
+                    <div class="mt-3">
+                        <div class="info-box">
+                            <div class="info-label">Admin Notes</div>
+                            <div class="info-value">{{ claim.admin_notes }}</div>
+                            {% if claim.processed_by and claim.processed_at %}
+                            <small class="text-muted">
+                                Processed by {{ claim.get_processed_by_user().first_name if claim.get_processed_by_user() else 'Admin' }} 
+                                on {{ claim.processed_at.strftime('%d %B %Y at %H:%M') }}
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Policy Information -->
+            {% if policy %}
+            <div class="card-modern mb-4">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-3">Policy Information</h4>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="info-box h-100">
+                                <div class="info-label">Policy Details</div>
+                                <div class="info-value">{{ policy.policy_name }}</div>
+                                <small class="text-muted">#{{ policy.policy_number }}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-box h-100">
+                                <div class="info-label">Coverage Amount</div>
+                                <div class="info-value">R{{ "%.2f"|format(policy.coverage_amount) }}</div>
+                                <small class="text-muted">Monthly Premium: R{{ "%.2f"|format(policy.monthly_premium) }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Member Information -->
+                    {% if claim.covered_member %}
+                    <div class="mt-3">
+                        <h5 class="fw-bold mb-2">Covered Member Details</h5>
+                        <div class="info-box">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-label">Name</div>
+                                    <div class="info-value">{{ claim.covered_member.first_name }} {{ claim.covered_member.last_name }}</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-label">Relationship</div>
+                                    <div class="info-value">{{ claim.covered_member.relationship|title }}</div>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-6">
+                                    <div class="info-label">ID Number</div>
+                                    <div class="info-value">{{ claim.covered_member.id_number }}</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-label">Date of Birth</div>
+                                    <div class="info-value">{{ claim.covered_member.date_of_birth.strftime('%d %b %Y') }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Bank Details -->
+            {% if bank_details %}
+            <div class="card-modern mb-4">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-3">Banking Information</h4>
+                    <div class="bank-details-card">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="info-label">Bank Name</div>
+                                <div class="info-value">{{ bank_details.bank_name }}</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="info-label">Account Holder</div>
+                                <div class="info-value">{{ bank_details.account_holder }}</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="info-label">Account Number</div>
+                                <div class="info-value">{{ bank_details.account_number }}</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="info-label">Branch Code</div>
+                                <div class="info-value">{{ bank_details.branch_code }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Actions & Documents -->
+        <div class="col-lg-4">
+            <!-- Action Form -->
+            <div class="card-modern mb-4">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-3">Update Claim Status</h4>
+                    <form method="POST" action="{{ url_for('admin.review_claim', claim_id=claim.id) }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Status</label>
+                            {{ form.status(class="form-select form-control-custom") }}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Admin Notes</label>
+                            {{ form.admin_notes(class="form-control form-control-custom", rows="4", 
+                                placeholder="Add notes about this claim decision...") }}
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="action-button btn-review">
+                                <i class="fas fa-save"></i> Update Claim Status
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Financial Breakdown -->
+            <div class="card-modern mb-4">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-3">Financial Breakdown</h4>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <div class="info-label">Claim Amount</div>
+                            <div class="info-value text-success">R{{ "%.2f"|format(claim.claim_amount) }}</div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <div class="info-label">Processing Fee</div>
+                            <div class="info-value text-danger">-R{{ "%.2f"|format(claim.processing_fee) }}</div>
+                            <small class="text-muted">({{ "%.1f"|format((claim.processing_fee/claim.claim_amount)*100) }}% of claim amount)</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col">
+                            <div class="info-label">Net Payout</div>
+                            <div class="amount-display">R{{ "%.2f"|format(claim.net_amount) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents -->
+            <div class="card-modern mb-4">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-3">Supporting Documents</h4>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="document-card">
+                                <div class="document-icon">
+                                    <i class="fas fa-file-medical"></i>
+                                </div>
+                                <h6 class="fw-bold mb-2">Death Certificate</h6>
+                                {% if claim.death_certificate %}
+                                <a href="{{ url_for('static', filename='uploads/' + claim.death_certificate) }}" 
+                                   target="_blank"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i> View Document
+                                </a>
+                                {% else %}
+                                <span class="badge bg-warning">Not Uploaded</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="document-card">
+                                <div class="document-icon">
+                                    <i class="fas fa-id-card"></i>
+                                </div>
+                                <h6 class="fw-bold mb-2">ID Copy</h6>
+                                {% if claim.id_copy %}
+                                <a href="{{ url_for('static', filename='uploads/' + claim.id_copy) }}" 
+                                   target="_blank"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i> View Document
+                                </a>
+                                {% else %}
+                                <span class="badge bg-warning">Not Uploaded</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="document-card">
+                                <div class="document-icon">
+                                    <i class="fas fa-file-contract"></i>
+                                </div>
+                                <h6 class="fw-bold mb-2">Burial Order</h6>
+                                {% if claim.burial_order %}
+                                <a href="{{ url_for('static', filename='uploads/' + claim.burial_order) }}" 
+                                   target="_blank"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i> View Document
+                                </a>
+                                {% else %}
+                                <span class="badge bg-warning">Not Uploaded</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Claim Timeline -->
+            <div class="card-modern">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-3">Claim Timeline</h4>
+                    <div class="timeline">
+                        <div class="timeline-item completed">
+                            <div class="timeline-date">{{ claim.created_at.strftime('%d %b %Y') }}</div>
+                            <h6 class="fw-bold">Claim Submitted</h6>
+                            <p class="text-muted mb-0">Claim #{{ claim.claim_number }} created</p>
+                        </div>
+                        
+                        {% if claim.status in ['under_review', 'approved', 'rejected', 'paid'] %}
+                        <div class="timeline-item {% if claim.status != 'under_review' %}completed{% else %}pending{% endif %}">
+                            <div class="timeline-date">{% if claim.processed_at %}{{ claim.processed_at.strftime('%d %b %Y') }}{% else %}Pending{% endif %}</div>
+                            <h6 class="fw-bold">Under Review</h6>
+                            <p class="text-muted mb-0">Admin review in progress</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if claim.status in ['approved', 'rejected', 'paid'] %}
+                        <div class="timeline-item {% if claim.status != 'approved' %}completed{% else %}pending{% endif %}">
+                            <div class="timeline-date">{% if claim.status != 'approved' and claim.processed_at %}{{ claim.processed_at.strftime('%d %b %Y') }}{% else %}Pending{% endif %}</div>
+                            <h6 class="fw-bold">Decision Made</h6>
+                            <p class="text-muted mb-0">Claim {{ claim.status }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if claim.status == 'paid' %}
+                        <div class="timeline-item completed">
+                            <div class="timeline-date">{% if claim.processed_at %}{{ claim.processed_at.strftime('%d %b %Y') }}{% else %}Completed{% endif %}</div>
+                            <h6 class="fw-bold">Payout Processed</h6>
+                            <p class="text-muted mb-0">R{{ "%.2f"|format(claim.net_amount) }} transferred</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Information -->
+    {% if user %}
+    <div class="card-modern mt-4">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">Claimant Information</h4>
+                <a href="{{ url_for('admin.user_details', user_id=user.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-external-link-alt me-1"></i> View Full Profile
+                </a>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="info-box h-100">
+                        <div class="info-label">Claimant Name</div>
+                        <div class="info-value">{{ user.first_name }} {{ user.last_name }}</div>
+                        <small class="text-muted">ID: {{ user.id_number }}</small>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="info-box h-100">
+                        <div class="info-label">Contact Information</div>
+                        <div class="info-value">{{ user.phone }}</div>
+                        <small class="text-muted">{{ user.email }}</small>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="info-box h-100">
+                        <div class="info-label">Account Balance</div>
+                        <div class="info-value">R{{ "%.2f"|format(user.virtual_balance) }}</div>
+                        <small class="text-muted">Available for payout</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-update form based on quick actions
+        const statusSelect = document.querySelector('select[name="status"]');
+        const notesTextarea = document.querySelector('textarea[name="admin_notes"]');
+        
+        // Quick approve button
+        document.querySelectorAll('form input[value="approved"]').forEach(btn => {
+            btn.closest('form').addEventListener('submit', function(e) {
+                if (!confirm('Are you sure you want to approve this claim? This action cannot be undone.')) {
+                    e.preventDefault();
+                }
+            });
+        });
+        
+        // Quick reject button
+        document.querySelectorAll('form input[value="rejected"]').forEach(btn => {
+            btn.closest('form').addEventListener('submit', function(e) {
+                if (!confirm('Are you sure you want to reject this claim? This action cannot be undone.')) {
+                    e.preventDefault();
+                }
+            });
+        });
+        
+        // Quick pay button
+        document.querySelectorAll('form input[value="paid"]').forEach(btn => {
+            btn.closest('form').addEventListener('submit', function(e) {
+                if (!confirm('Process payout of R{{ "%.2f"|format(claim.net_amount) }} to the claimant? This will transfer funds immediately.')) {
+                    e.preventDefault();
+                }
+            });
+        });
+        
+        // Status change animation
+        statusSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const newStatus = selectedOption.value;
+            const statusBadge = document.querySelector('.claim-status-badge');
+            
+            if (statusBadge) {
+                // Remove all status classes
+                statusBadge.classList.remove('status-pending', 'status-under_review', 
+                    'status-approved', 'status-rejected', 'status-paid');
+                
+                // Add new status class
+                statusBadge.classList.add('status-' + newStatus);
+                statusBadge.textContent = newStatus.replace('_', ' ').title();
+                
+                // Animate badge
+                statusBadge.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    statusBadge.style.transform = 'scale(1)';
+                }, 300);
+            }
+            
+            // Auto-fill notes based on status
+            if (!notesTextarea.value.trim()) {
+                const notesMap = {
+                    'under_review': 'Claim placed under review for further verification.',
+                    'approved': 'Claim approved after verification of documents.',
+                    'rejected': 'Claim rejected due to: [Specify reason]',
+                    'paid': 'Payout processed successfully.'
+                };
+                
+                if (notesMap[newStatus]) {
+                    notesTextarea.value = notesMap[newStatus];
+                }
+            }
+        });
+        
+        // Document preview enhancement
+        document.querySelectorAll('a[target="_blank"]').forEach(link => {
+            link.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 4px 12px rgba(14, 165, 233, 0.3)';
+            });
+            
+            link.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+        });
+        
+        // Real-time character count for notes
+        if (notesTextarea) {
+            const charCount = document.createElement('div');
+            charCount.className = 'text-muted small mt-1';
+            charCount.textContent = 'Characters: 0';
+            notesTextarea.parentNode.appendChild(charCount);
+            
+            notesTextarea.addEventListener('input', function() {
+                charCount.textContent = 'Characters: ' + this.value.length;
+                
+                if (this.value.length > 500) {
+                    charCount.className = 'text-danger small mt-1';
+                } else if (this.value.length > 300) {
+                    charCount.className = 'text-warning small mt-1';
+                } else {
+                    charCount.className = 'text-muted small mt-1';
+                }
+            });
+            
+            // Trigger initial count
+            notesTextarea.dispatchEvent(new Event('input'));
+        }
+    });
+</script>
+{% endblock %}

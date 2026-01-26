@@ -1,0 +1,1026 @@
+{% extends "base.html" %}
+
+{% block title %}Claims Management - Admin Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Claims Management Specific Styles */
+    .claims-header {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, #0f172a 100%);
+        color: white;
+        padding: 3rem 0;
+        border-radius: 0 0 24px 24px;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .claims-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold), #10b981);
+    }
+    
+    .claims-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-badge {
+        background: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: 16px;
+        text-align: center;
+        transition: var(--transition);
+        border: 2px solid transparent;
+        box-shadow: var(--shadow-sm);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, transparent 0%, rgba(14, 165, 233, 0.05) 100%);
+        opacity: 0;
+        transition: var(--transition);
+    }
+    
+    .stat-badge:hover::before {
+        opacity: 1;
+    }
+    
+    .stat-badge:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-teal);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .stat-badge.pending {
+        border-left: 5px solid var(--warning);
+    }
+    
+    .stat-badge.approved {
+        border-left: 5px solid var(--success);
+    }
+    
+    .stat-badge.rejected {
+        border-left: 5px solid var(--danger);
+    }
+    
+    .stat-badge.paid {
+        border-left: 5px solid var(--accent-gold);
+    }
+    
+    .stat-count {
+        font-size: 2.5rem;
+        font-weight: 800;
+        display: block;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Filter Section */
+    .filter-section {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .filter-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .filter-tab {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+        background: #f1f5f9;
+        color: var(--text-dark);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .filter-tab::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        opacity: 0;
+        transition: var(--transition);
+    }
+    
+    .filter-tab span {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .filter-tab:hover {
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .filter-tab:hover::before {
+        opacity: 1;
+    }
+    
+    .filter-tab.active {
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        color: white;
+        box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+    }
+    
+    /* Claims Table */
+    .claims-table-container {
+        background: var(--card-bg);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .table-header {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        padding: 1.5rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .table-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .search-box {
+        position: relative;
+        flex-grow: 1;
+        max-width: 400px;
+    }
+    
+    .search-box input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        transition: var(--transition);
+        background: white;
+    }
+    
+    .search-box input:focus {
+        outline: none;
+        border-color: var(--primary-teal);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    }
+    
+    .search-box i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+    
+    /* Table Styling */
+    .claims-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .claims-table thead th {
+        background: #f8fafc;
+        padding: 1.25rem 1.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        text-align: left;
+        border-bottom: 2px solid #e2e8f0;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .claims-table tbody tr {
+        transition: var(--transition);
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .claims-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    
+    .claims-table tbody tr:hover {
+        background: linear-gradient(90deg, rgba(14, 165, 233, 0.05), rgba(251, 191, 36, 0.03));
+        transform: scale(1.005);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .claims-table tbody td {
+        padding: 1.25rem 1.5rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    /* Status Badges */
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .status-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.1);
+        opacity: 0;
+        transition: var(--transition);
+    }
+    
+    .status-badge:hover::before {
+        opacity: 1;
+    }
+    
+    .status-badge.pending {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        color: #92400e;
+        border: 2px solid #fbbf24;
+    }
+    
+    .status-badge.pending:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+    }
+    
+    .status-badge.under_review {
+        background: linear-gradient(135deg, #dbeafe, #93c5fd);
+        color: #1e40af;
+        border: 2px solid #3b82f6;
+    }
+    
+    .status-badge.under_review:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .status-badge.approved {
+        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        color: #065f46;
+        border: 2px solid #10b981;
+    }
+    
+    .status-badge.approved:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-badge.rejected {
+        background: linear-gradient(135deg, #fee2e2, #fca5a5);
+        color: #991b1b;
+        border: 2px solid #ef4444;
+    }
+    
+    .status-badge.rejected:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    .status-badge.paid {
+        background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        color: #0369a1;
+        border: 2px solid #0ea5e9;
+    }
+    
+    .status-badge.paid:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-view {
+        background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+        color: var(--text-dark);
+        border: 2px solid #cbd5e1;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    
+    .btn-view:hover {
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        color: white;
+        border-color: var(--primary-teal);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+    
+    .btn-process {
+        background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    
+    .btn-process:hover {
+        background: linear-gradient(135deg, #f59e0b, var(--accent-gold));
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+    }
+    
+    /* Claim Details Row */
+    .claim-details-row {
+        background: linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(241, 245, 249, 0.9));
+        border-left: 5px solid var(--primary-teal);
+        margin: 0.5rem 0;
+        border-radius: 0 12px 12px 0;
+        transition: var(--transition);
+    }
+    
+    .claim-details-row:hover {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(251, 191, 36, 0.03));
+        border-left-color: var(--accent-gold);
+        transform: translateX(5px);
+    }
+    
+    /* Pagination */
+    .pagination-modern {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 2rem 0;
+    }
+    
+    .page-link-modern {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        color: var(--text-dark);
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-link-modern:hover {
+        border-color: var(--primary-teal);
+        color: var(--primary-teal);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .page-link-modern.active {
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        border-color: var(--primary-teal);
+        color: white;
+        box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 20px;
+        border: 2px dashed #cbd5e1;
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 1.5rem;
+        display: inline-block;
+        transition: var(--transition);
+    }
+    
+    .empty-state:hover .empty-state-icon {
+        color: var(--primary-teal);
+        transform: scale(1.1);
+    }
+    
+    /* Responsive */
+    @media (max-width: 992px) {
+        .claims-table {
+            display: block;
+            overflow-x: auto;
+        }
+        
+        .filter-tabs {
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+        
+        .table-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .search-box {
+            max-width: 100%;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .claims-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .claims-stats {
+            grid-template-columns: 1fr;
+        }
+        
+        .filter-tab {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Claims Header -->
+<div class="claims-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="gradient-text display-6 fw-bold mb-2">Claims Management</h1>
+                <p class="lead text-light opacity-90">Review, process, and manage all funeral claims</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-modern">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                </a>
+                <a href="{{ url_for('admin.reports') }}" class="btn btn-outline-light">
+                    <i class="fas fa-chart-bar me-2"></i> Reports
+                </a>
+            </div>
+        </div>
+        
+        <!-- Claims Statistics -->
+        <div class="claims-stats">
+            {% set pending_count = claims.items|selectattr('status', 'equalto', 'pending')|list|length %}
+            {% set under_review_count = claims.items|selectattr('status', 'equalto', 'under_review')|list|length %}
+            {% set approved_count = claims.items|selectattr('status', 'equalto', 'approved')|list|length %}
+            {% set rejected_count = claims.items|selectattr('status', 'equalto', 'rejected')|list|length %}
+            {% set paid_count = claims.items|selectattr('status', 'equalto', 'paid')|list|length %}
+            
+            <div class="stat-badge pending">
+                <span class="stat-count">{{ pending_count }}</span>
+                <span class="d-block fw-semibold">Pending</span>
+                <span class="text-muted">Awaiting review</span>
+            </div>
+            
+            <div class="stat-badge under_review">
+                <span class="stat-count">{{ under_review_count }}</span>
+                <span class="d-block fw-semibold">Under Review</span>
+                <span class="text-muted">Being processed</span>
+            </div>
+            
+            <div class="stat-badge approved">
+                <span class="stat-count">{{ approved_count }}</span>
+                <span class="d-block fw-semibold">Approved</span>
+                <span class="text-muted">Ready for payment</span>
+            </div>
+            
+            <div class="stat-badge rejected">
+                <span class="stat-count">{{ rejected_count }}</span>
+                <span class="d-block fw-semibold">Rejected</span>
+                <span class="text-muted">Declined claims</span>
+            </div>
+            
+            <div class="stat-badge paid">
+                <span class="stat-count">{{ paid_count }}</span>
+                <span class="d-block fw-semibold">Paid</span>
+                <span class="text-muted">Completed claims</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold gradient-text mb-0">Filter Claims</h4>
+            <div class="text-muted">
+                Total: <span class="fw-bold text-dark">{{ claims.total }}</span> claims
+            </div>
+        </div>
+        
+        <div class="filter-tabs">
+            <a href="{{ url_for('admin.manage_claims') }}" 
+               class="filter-tab {{ 'active' if status == 'all' }}">
+                <span><i class="fas fa-layer-group me-2"></i>All Claims</span>
+            </a>
+            <a href="{{ url_for('admin.manage_claims', status='pending') }}" 
+               class="filter-tab {{ 'active' if status == 'pending' }}">
+                <span><i class="fas fa-clock me-2"></i>Pending</span>
+            </a>
+            <a href="{{ url_for('admin.manage_claims', status='under_review') }}" 
+               class="filter-tab {{ 'active' if status == 'under_review' }}">
+                <span><i class="fas fa-search me-2"></i>Under Review</span>
+            </a>
+            <a href="{{ url_for('admin.manage_claims', status='approved') }}" 
+               class="filter-tab {{ 'active' if status == 'approved' }}">
+                <span><i class="fas fa-check-circle me-2"></i>Approved</span>
+            </a>
+            <a href="{{ url_for('admin.manage_claims', status='rejected') }}" 
+               class="filter-tab {{ 'active' if status == 'rejected' }}">
+                <span><i class="fas fa-times-circle me-2"></i>Rejected</span>
+            </a>
+            <a href="{{ url_for('admin.manage_claims', status='paid') }}" 
+               class="filter-tab {{ 'active' if status == 'paid' }}">
+                <span><i class="fas fa-money-check-alt me-2"></i>Paid</span>
+            </a>
+        </div>
+        
+        <form method="GET" action="{{ url_for('admin.manage_claims') }}" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Date Range</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                    <input type="date" class="form-control" placeholder="From">
+                    <span class="input-group-text">to</span>
+                    <input type="date" class="form-control" placeholder="To">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Search Claims</label>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" name="search" placeholder="Search by claim number, name..." 
+                           value="{{ request.args.get('search', '') }}">
+                </div>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-modern w-100">
+                    <i class="fas fa-filter me-2"></i> Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Claims Table -->
+    <div class="claims-table-container">
+        <div class="table-header">
+            <div class="table-actions">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="tableSearch" placeholder="Search in this table...">
+                </div>
+                <div class="ms-auto d-flex gap-2">
+                    <button class="btn btn-outline-primary" id="exportBtn">
+                        <i class="fas fa-download me-2"></i> Export
+                    </button>
+                    <button class="btn btn-modern" id="refreshBtn">
+                        <i class="fas fa-sync-alt me-2"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        {% if claims.items %}
+        <div class="table-responsive">
+            <table class="claims-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Claim Number</th>
+                        <th style="width: 20%;">Deceased / Policy Holder</th>
+                        <th style="width: 15%;">Policy</th>
+                        <th style="width: 10%;">Amount</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 15%;">Submitted</th>
+                        <th style="width: 10%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for claim in claims.items %}
+                    <tr class="claim-details-row">
+                        <td>
+                            <div class="fw-bold">{{ claim.claim_number }}</div>
+                            <small class="text-muted">ID: {{ claim.id }}</small>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ claim.deceased_name }}</div>
+                            <small class="text-muted">
+                                <i class="fas fa-user me-1"></i>{{ claim.claimant.get_full_name() }}
+                            </small>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ claim.policy.policy_number }}</div>
+                            <small class="text-muted">{{ claim.policy.policy_name }}</small>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-success">R{{ "%.2f"|format(claim.claim_amount) }}</div>
+                            <small class="text-muted">Net: R{{ "%.2f"|format(claim.net_amount) }}</small>
+                        </td>
+                        <td>
+                            <span class="status-badge {{ claim.status }}">
+                                <i class="fas 
+                                    {% if claim.status == 'pending' %}fa-clock
+                                    {% elif claim.status == 'under_review' %}fa-search
+                                    {% elif claim.status == 'approved' %}fa-check-circle
+                                    {% elif claim.status == 'rejected' %}fa-times-circle
+                                    {% elif claim.status == 'paid' %}fa-check-double
+                                    {% endif %}"></i>
+                                {{ claim.status|replace('_', ' ')|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <div>{{ claim.created_at.strftime('%Y-%m-%d') }}</div>
+                            <small class="text-muted">{{ claim.created_at.strftime('%H:%M') }}</small>
+                            {% if claim.processed_at %}
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    Processed: {{ claim.processed_at.strftime('%Y-%m-%d') }}
+                                </small>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('admin.review_claim', claim_id=claim.id) }}" 
+                                   class="btn-process">
+                                    <i class="fas fa-edit"></i> Review
+                                </a>
+                                <a href="#" class="btn-view" data-bs-toggle="modal" 
+                                   data-bs-target="#detailsModal{{ claim.id }}">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Quick Details Modal -->
+                    <div class="modal fade" id="detailsModal{{ claim.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title gradient-text fw-bold">
+                                        Claim Details: {{ claim.claim_number }}
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6 class="fw-bold mb-3">Claim Information</h6>
+                                            <table class="table table-sm">
+                                                <tr>
+                                                    <td><strong>Deceased:</strong></td>
+                                                    <td>{{ claim.deceased_name }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Date of Death:</strong></td>
+                                                    <td>{{ claim.date_of_death.strftime('%Y-%m-%d') }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Burial Date:</strong></td>
+                                                    <td>{{ claim.date_of_burial.strftime('%Y-%m-%d') }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Cause of Death:</strong></td>
+                                                    <td>{{ claim.cause_of_death or 'Not specified' }}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="fw-bold mb-3">Financial Details</h6>
+                                            <table class="table table-sm">
+                                                <tr>
+                                                    <td><strong>Claim Amount:</strong></td>
+                                                    <td class="fw-bold">R{{ "%.2f"|format(claim.claim_amount) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Processing Fee:</strong></td>
+                                                    <td>R{{ "%.2f"|format(claim.processing_fee) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Net Payout:</strong></td>
+                                                    <td class="text-success fw-bold">R{{ "%.2f"|format(claim.net_amount) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Policy Coverage:</strong></td>
+                                                    <td>R{{ "%.2f"|format(claim.policy.coverage_amount) }}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <h6 class="fw-bold mb-3">Documents</h6>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            {% if claim.death_certificate %}
+                                            <a href="{{ url_for('static', filename='uploads/' + claim.death_certificate) }}" 
+                                               target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-file-pdf me-2"></i> Death Certificate
+                                            </a>
+                                            {% endif %}
+                                            {% if claim.id_copy %}
+                                            <a href="{{ url_for('static', filename='uploads/' + claim.id_copy) }}" 
+                                               target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-id-card me-2"></i> ID Copy
+                                            </a>
+                                            {% endif %}
+                                            {% if claim.burial_order %}
+                                            <a href="{{ url_for('static', filename='uploads/' + claim.burial_order) }}" 
+                                               target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-file-alt me-2"></i> Burial Order
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    {% if claim.admin_notes %}
+                                    <div class="mt-4">
+                                        <h6 class="fw-bold mb-3">Admin Notes</h6>
+                                        <div class="card bg-light border">
+                                            <div class="card-body">
+                                                {{ claim.admin_notes }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        Close
+                                    </button>
+                                    <a href="{{ url_for('admin.review_claim', claim_id=claim.id) }}" 
+                                       class="btn btn-modern">
+                                        <i class="fas fa-edit me-2"></i> Full Review
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if claims.pages > 1 %}
+        <div class="pagination-modern">
+            {% if claims.has_prev %}
+            <a href="{{ url_for('admin.manage_claims', page=claims.prev_num, status=status) }}" 
+               class="page-link-modern">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            {% endif %}
+            
+            {% for page_num in claims.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                {% if page_num %}
+                    {% if page_num != claims.page %}
+                    <a href="{{ url_for('admin.manage_claims', page=page_num, status=status) }}" 
+                       class="page-link-modern">
+                        {{ page_num }}
+                    </a>
+                    {% else %}
+                    <span class="page-link-modern active">{{ page_num }}</span>
+                    {% endif %}
+                {% else %}
+                <span class="page-link-modern disabled">...</span>
+                {% endif %}
+            {% endfor %}
+            
+            {% if claims.has_next %}
+            <a href="{{ url_for('admin.manage_claims', page=claims.next_num, status=status) }}" 
+               class="page-link-modern">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-file-medical"></i>
+            </div>
+            <h3 class="fw-bold gradient-text mb-3">No Claims Found</h3>
+            <p class="text-muted mb-4">
+                {% if status != 'all' %}
+                There are no claims with status "{{ status|replace('_', ' ')|title }}".
+                {% else %}
+                No claims have been submitted yet.
+                {% endif %}
+            </p>
+            <a href="{{ url_for('admin.manage_claims', status='all') }}" class="btn btn-modern">
+                <i class="fas fa-sync-alt me-2"></i> View All Claims
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Processing Tips -->
+    <div class="card-modern mt-4">
+        <div class="card-body">
+            <h5 class="fw-bold gradient-text mb-3">
+                <i class="fas fa-lightbulb me-2"></i> Quick Processing Tips
+            </h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
+                            <i class="fas fa-clock text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Pending Claims</h6>
+                            <p class="text-muted small">Review within 48 hours of submission</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="bg-warning bg-opacity-10 p-2 rounded me-3">
+                            <i class="fas fa-search text-warning"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Under Review</h6>
+                            <p class="text-muted small">Complete verification within 5 working days</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="bg-success bg-opacity-10 p-2 rounded me-3">
+                            <i class="fas fa-check text-success"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Approved Claims</h6>
+                            <p class="text-muted small">Process payments within 24 hours</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Table search functionality
+        const tableSearch = document.getElementById('tableSearch');
+        if (tableSearch) {
+            tableSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('.claim-details-row');
+                
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            });
+        }
+        
+        // Export button functionality
+        const exportBtn = document.getElementById('exportBtn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', function() {
+                const status = '{{ status }}';
+                const url = `{{ url_for('admin.reports') }}?export=claims&status=${status}`;
+                window.open(url, '_blank');
+            });
+        }
+        
+        // Refresh button functionality
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', function() {
+                refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Refreshing...';
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            });
+        }
+        
+        // Highlight urgent claims (pending for more than 2 days)
+        const rows = document.querySelectorAll('.claim-details-row');
+        const now = new Date();
+        
+        rows.forEach(row => {
+            const dateCell = row.querySelector('td:nth-child(6) div');
+            if (dateCell) {
+                const submittedDate = new Date(dateCell.textContent);
+                const diffDays = Math.floor((now - submittedDate) / (1000 * 60 * 60 * 24));
+                
+                if (diffDays > 2) {
+                    row.style.animation = 'pulse 2s infinite';
+                    row.style.borderLeft = '5px solid #ef4444';
+                    
+                    // Add warning icon
+                    const statusBadge = row.querySelector('.status-badge');
+                    if (statusBadge) {
+                        const warningIcon = document.createElement('i');
+                        warningIcon.className = 'fas fa-exclamation-triangle text-danger ms-2';
+                        warningIcon.title = 'Claim pending for more than 2 days';
+                        statusBadge.appendChild(warningIcon);
+                    }
+                }
+            }
+        });
+        
+        // Add CSS animation for urgent claims
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+                70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Status filter quick actions
+        document.querySelectorAll('.stat-badge').forEach(badge => {
+            badge.addEventListener('click', function() {
+                const status = this.classList.contains('pending') ? 'pending' :
+                              this.classList.contains('under_review') ? 'under_review' :
+                              this.classList.contains('approved') ? 'approved' :
+                              this.classList.contains('rejected') ? 'rejected' :
+                              this.classList.contains('paid') ? 'paid' : 'all';
+                
+                window.location.href = `{{ url_for('admin.manage_claims') }}?status=${status}`;
+            });
+            
+            badge.style.cursor = 'pointer';
+        });
+        
+        // Auto-refresh every 60 seconds for pending claims
+        if ('{{ status }}' === 'pending' || '{{ status }}' === 'all') {
+            setTimeout(() => {
+                window.location.reload();
+            }, 60000);
+        }
+    });
+</script>
+{% endblock %}

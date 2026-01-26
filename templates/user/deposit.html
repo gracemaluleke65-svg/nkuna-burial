@@ -1,0 +1,780 @@
+{% extends "base.html" %}
+
+{% block title %}Deposit Funds - Nkuna Burial Society{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Deposit Page Specific Styles */
+    .deposit-hero {
+        background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(30, 58, 138, 0.9) 100%);
+        color: white;
+        padding: 4rem 0;
+        position: relative;
+        overflow: hidden;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 3rem;
+    }
+    
+    .deposit-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%230ea5e9' fill-opacity='0.15' fill-rule='evenodd'/%3E%3C/svg%3E");
+        animation: float 20s linear infinite;
+    }
+    
+    /* Balance Display */
+    .balance-display {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(251, 191, 36, 0.1));
+        border: 2px solid rgba(14, 165, 233, 0.3);
+        border-radius: 20px;
+        padding: 2rem;
+        transition: var(--transition);
+        backdrop-filter: blur(10px);
+    }
+    
+    .balance-display:hover {
+        border-color: var(--primary-teal);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(14, 165, 233, 0.15);
+    }
+    
+    .balance-amount {
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(45deg, var(--primary-teal), var(--accent-gold));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        line-height: 1;
+    }
+    
+    /* Deposit Form */
+    .deposit-form-container {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 2px solid transparent;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .deposit-form-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+        transform: translateY(-100%);
+        transition: transform 0.5s ease;
+    }
+    
+    .deposit-form-container:hover::before {
+        transform: translateY(0);
+    }
+    
+    .deposit-form-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border-color: var(--primary-teal);
+    }
+    
+    /* Form Controls */
+    .form-control-custom {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        font-size: 1.1rem;
+        transition: var(--transition);
+        background: white;
+    }
+    
+    .form-control-custom:focus {
+        border-color: var(--primary-teal);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .form-control-custom:hover {
+        border-color: #cbd5e1;
+    }
+    
+    .input-group-custom {
+        position: relative;
+    }
+    
+    .input-group-custom .input-group-text {
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        color: white;
+        border: none;
+        border-radius: 12px 0 0 12px;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    
+    .input-group-custom:hover .input-group-text {
+        background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+    }
+    
+    /* Fee Breakdown */
+    .fee-breakdown {
+        background: linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(226, 232, 240, 0.6));
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid rgba(14, 165, 233, 0.2);
+        transition: var(--transition);
+    }
+    
+    .fee-breakdown:hover {
+        border-color: var(--primary-teal);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .fee-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        transition: var(--transition);
+    }
+    
+    .fee-item:hover {
+        background: rgba(14, 165, 233, 0.05);
+        padding-left: 1rem;
+        padding-right: 1rem;
+        margin: 0 -1rem;
+        border-radius: 8px;
+    }
+    
+    .fee-item:last-child {
+        border-bottom: none;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text-dark);
+    }
+    
+    /* Amount Preview Cards */
+    .amount-preview-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: var(--transition);
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .amount-preview-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-teal);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.5s ease;
+    }
+    
+    .amount-preview-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .amount-preview-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+        border-color: var(--primary-teal);
+    }
+    
+    .preview-amount {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(45deg, var(--primary-teal), var(--accent-gold));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        line-height: 1;
+    }
+    
+    /* Limit Indicators */
+    .limit-indicator {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(14, 165, 233, 0.1);
+        color: var(--primary-teal);
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    
+    .limit-indicator:hover {
+        background: var(--primary-teal);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(14, 165, 233, 0.3);
+    }
+    
+    /* Deposit Button */
+    .deposit-button {
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        width: 100%;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3);
+    }
+    
+    .deposit-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: 0.5s;
+    }
+    
+    .deposit-button:hover::before {
+        left: 100%;
+    }
+    
+    .deposit-button:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 15px 30px rgba(14, 165, 233, 0.4);
+        background: linear-gradient(135deg, #10b981, var(--primary-teal));
+    }
+    
+    .deposit-button:active {
+        transform: translateY(-1px);
+    }
+    
+    /* Quick Amount Buttons */
+    .quick-amount-btn {
+        background: white;
+        border: 2px solid #e2e8f0;
+        color: var(--text-dark);
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: var(--transition);
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .quick-amount-btn:hover {
+        border-color: var(--primary-teal);
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(14, 165, 233, 0.2);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .deposit-hero {
+            padding: 3rem 0;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .balance-amount {
+            font-size: 2.5rem;
+        }
+        
+        .deposit-form-container {
+            padding: 1.5rem;
+        }
+        
+        .preview-amount {
+            font-size: 2rem;
+        }
+        
+        .quick-amount-btn {
+            min-width: 100px;
+            padding: 0.5rem 1rem;
+        }
+    }
+    
+    /* Animation for fee calculation */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .pulse {
+        animation: pulse 0.5s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Deposit Hero Section -->
+<section class="deposit-hero">
+    <div class="container position-relative">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="hero-title mb-3">Deposit Funds</h1>
+                <p class="hero-subtitle mb-4">Add money to your virtual balance with our secure deposit system</p>
+                
+                <!-- Balance Display -->
+                <div class="balance-display d-inline-block">
+                    <div class="d-flex align-items-center">
+                        <div class="me-4">
+                            <i class="fas fa-wallet fa-3x" style="color: var(--accent-gold);"></i>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-light">Current Balance</p>
+                            <div class="balance-amount">R{{ "%.2f"|format(current_user.virtual_balance) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                <div class="d-flex flex-wrap justify-content-center justify-content-lg-end gap-2">
+                    <span class="limit-indicator">
+                        <i class="fas fa-arrow-up me-2"></i> Max: R50,000
+                    </span>
+                    <span class="limit-indicator">
+                        <i class="fas fa-chart-line me-2"></i> Cap: R100,000
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Deposit Section -->
+<div class="container">
+    <div class="row g-4">
+        <!-- Deposit Form Column -->
+        <div class="col-lg-8">
+            <div class="deposit-form-container">
+                <h2 class="gradient-text fw-bold mb-4">Make a Deposit</h2>
+                
+                <form method="POST" action="{{ url_for('main.deposit') }}" id="depositForm">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Amount Input -->
+                    <div class="mb-4">
+                        <label for="amount" class="form-label fw-bold fs-5">Deposit Amount (R)</label>
+                        <div class="input-group input-group-custom mb-3">
+                            <span class="input-group-text">
+                                <i class="fas fa-rand-sign"></i>
+                            </span>
+                            {{ form.amount(class="form-control form-control-custom", id="amount", placeholder="Enter amount between R10 and R50,000") }}
+                        </div>
+                        {% if form.amount.errors %}
+                            <div class="alert alert-danger alert-modern">
+                                {% for error in form.amount.errors %}
+                                    <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Quick Amount Buttons -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold mb-3">Quick Select</label>
+                        <div class="d-flex flex-wrap gap-3">
+                            <button type="button" class="quick-amount-btn" data-amount="100">
+                                R100
+                            </button>
+                            <button type="button" class="quick-amount-btn" data-amount="500">
+                                R500
+                            </button>
+                            <button type="button" class="quick-amount-btn" data-amount="1000">
+                                R1,000
+                            </button>
+                            <button type="button" class="quick-amount-btn" data-amount="5000">
+                                R5,000
+                            </button>
+                            <button type="button" class="quick-amount-btn" data-amount="10000">
+                                R10,000
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Reference Field -->
+                    <div class="mb-4">
+                        <label for="reference" class="form-label fw-bold fs-5">Payment Reference (Optional)</label>
+                        <div class="input-group input-group-custom">
+                            <span class="input-group-text">
+                                <i class="fas fa-tag"></i>
+                            </span>
+                            {{ form.reference(class="form-control form-control-custom", id="reference", placeholder="e.g., Salary, Bonus, Gift") }}
+                        </div>
+                        <div class="form-text mt-2">
+                            Add a reference to help track this transaction in your history
+                        </div>
+                    </div>
+                    
+                    <!-- Fee Breakdown -->
+                    <div class="fee-breakdown mb-4">
+                        <h5 class="fw-bold mb-3">Fee Breakdown</h5>
+                        
+                        <div class="fee-item">
+                            <span>Deposit Amount:</span>
+                            <span id="depositAmountPreview" class="fw-bold">R0.00</span>
+                        </div>
+                        
+                        <div class="fee-item">
+                            <span>
+                                Service Fee (2.5%):
+                                <span class="text-muted d-block fs-7">Minimum R10 applies</span>
+                            </span>
+                            <span id="serviceFeePreview" class="text-danger fw-bold">-R0.00</span>
+                        </div>
+                        
+                        <div class="fee-item">
+                            <span>Net Amount Added:</span>
+                            <span id="netAmountPreview" class="text-success fw-bold">R0.00</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="mt-4">
+                        <button type="submit" class="deposit-button">
+                            <i class="fas fa-paper-plane me-2"></i> Process Deposit
+                        </button>
+                    </div>
+                    
+                    <!-- Terms Note -->
+                    <div class="mt-3 text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-lock me-1"></i>
+                            Your transaction is secure and protected
+                        </small>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Preview Column -->
+        <div class="col-lg-4">
+            <!-- New Balance Preview -->
+            <div class="amount-preview-card mb-4">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <i class="fas fa-wallet fa-2x me-3" style="color: var(--primary-teal);"></i>
+                    <h4 class="mb-0 fw-bold">New Balance</h4>
+                </div>
+                <div class="preview-amount mb-2" id="newBalancePreview">
+                    R{{ "%.2f"|format(current_user.virtual_balance) }}
+                </div>
+                <p class="text-muted mb-0">After deposit is processed</p>
+            </div>
+            
+            <!-- Service Fee Info -->
+            <div class="amount-preview-card mb-4">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <i class="fas fa-percentage fa-2x me-3" style="color: var(--accent-gold);"></i>
+                    <h4 class="mb-0 fw-bold">Service Fee</h4>
+                </div>
+                <div class="d-flex justify-content-center align-items-baseline mb-2">
+                    <span class="preview-amount me-2" id="feePercentage">2.5%</span>
+                    <span class="text-muted">of deposit</span>
+                </div>
+                <p class="text-muted mb-0">
+                    Minimum fee of R10 applies to all deposits
+                </p>
+            </div>
+            
+            <!-- Transaction Limits -->
+            <div class="amount-preview-card">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <i class="fas fa-shield-alt fa-2x me-3" style="color: #10b981;"></i>
+                    <h4 class="mb-0 fw-bold">Transaction Limits</h4>
+                </div>
+                <div class="text-center">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Per Transaction:</span>
+                        <span class="fw-bold">R50,000</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Balance Cap:</span>
+                        <span class="fw-bold">R100,000</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Minimum:</span>
+                        <span class="fw-bold">R10</span>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="progress" style="height: 8px; border-radius: 4px;">
+                        <div id="balanceProgress" class="progress-bar" 
+                             style="background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));"
+                             role="progressbar" 
+                             aria-valuenow="{{ (current_user.virtual_balance / 100000 * 100)|round|int }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <small class="text-muted">Current: {{ (current_user.virtual_balance / 100000 * 100)|round|int }}%</small>
+                        <small class="text-muted">Limit: 100%</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Help Information -->
+            <div class="mt-4 p-3" style="background: rgba(14, 165, 233, 0.05); border-radius: 12px; border-left: 4px solid var(--primary-teal);">
+                <h6 class="fw-bold mb-2"><i class="fas fa-info-circle me-2"></i> Need Help?</h6>
+                <p class="text-muted small mb-2">
+                    Funds are added to your virtual balance immediately after deposit confirmation.
+                </p>
+                <p class="text-muted small mb-0">
+                    Service fees help maintain platform security and continuous improvements.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Transactions -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card-modern p-4">
+                <h3 class="gradient-text fw-bold mb-4">
+                    <i class="fas fa-history me-2"></i> Recent Deposit History
+                </h3>
+                
+                <div class="table-responsive">
+                    <table class="table table-modern">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Transaction ID</th>
+                                <th>Amount</th>
+                                <th>Service Fee</th>
+                                <th>Net Amount</th>
+                                <th>Reference</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions if transaction.transaction_type == 'deposit' %}
+                            <tr>
+                                <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td><code class="text-primary">{{ transaction.transaction_id }}</code></td>
+                                <td class="fw-bold">R{{ "%.2f"|format(transaction.amount) }}</td>
+                                <td class="text-danger">-R{{ "%.2f"|format(transaction.service_fee) }}</td>
+                                <td class="text-success">+R{{ "%.2f"|format(transaction.net_amount) }}</td>
+                                <td>{{ transaction.reference or 'N/A' }}</td>
+                                <td>
+                                    <span class="badge bg-success rounded-pill px-3">
+                                        <i class="fas fa-check-circle me-1"></i> {{ transaction.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-history fa-2x mb-3"></i>
+                                        <p class="mb-0">No deposit history found</p>
+                                        <small>Your deposits will appear here</small>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('main.transactions') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i> View All Transactions
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const depositForm = document.getElementById('depositForm');
+        const amountInput = document.getElementById('amount');
+        const depositAmountPreview = document.getElementById('depositAmountPreview');
+        const serviceFeePreview = document.getElementById('serviceFeePreview');
+        const netAmountPreview = document.getElementById('netAmountPreview');
+        const newBalancePreview = document.getElementById('newBalancePreview');
+        const balanceProgress = document.getElementById('balanceProgress');
+        const feePercentage = document.getElementById('feePercentage');
+        
+        const currentBalance = {{ current_user.virtual_balance }};
+        const SERVICE_FEE_PERCENT = 2.5;
+        const SERVICE_FEE_MIN = 10;
+        const MAX_DEPOSIT = 50000;
+        const MAX_BALANCE = 100000;
+        
+        // Quick amount buttons
+        document.querySelectorAll('.quick-amount-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const amount = this.getAttribute('data-amount');
+                amountInput.value = amount;
+                calculateFees();
+                
+                // Add pulse animation to preview cards
+                document.querySelectorAll('.amount-preview-card').forEach(card => {
+                    card.classList.add('pulse');
+                    setTimeout(() => card.classList.remove('pulse'), 500);
+                });
+            });
+        });
+        
+        // Calculate fees on input change
+        amountInput.addEventListener('input', calculateFees);
+        
+        // Initial calculation
+        calculateFees();
+        
+        function calculateFees() {
+            let amount = parseFloat(amountInput.value) || 0;
+            
+            // Validate amount limits
+            if (amount > MAX_DEPOSIT) {
+                amount = MAX_DEPOSIT;
+                amountInput.value = MAX_DEPOSIT;
+            }
+            
+            if (amount + currentBalance > MAX_BALANCE) {
+                amount = MAX_BALANCE - currentBalance;
+                if (amount < 0) amount = 0;
+                amountInput.value = amount.toFixed(2);
+            }
+            
+            // Calculate service fee
+            let serviceFee = (amount * SERVICE_FEE_PERCENT / 100);
+            if (serviceFee < SERVICE_FEE_MIN && amount > 0) {
+                serviceFee = SERVICE_FEE_MIN;
+            }
+            
+            // Calculate net amount
+            const netAmount = amount - serviceFee;
+            const newBalance = currentBalance + netAmount;
+            
+            // Update previews
+            depositAmountPreview.textContent = `R${amount.toFixed(2)}`;
+            serviceFeePreview.textContent = `-R${serviceFee.toFixed(2)}`;
+            netAmountPreview.textContent = `+R${netAmount.toFixed(2)}`;
+            newBalancePreview.textContent = `R${newBalance.toFixed(2)}`;
+            
+            // Update progress bar
+            const balancePercentage = Math.min((newBalance / MAX_BALANCE) * 100, 100);
+            balanceProgress.style.width = `${balancePercentage}%`;
+            balanceProgress.setAttribute('aria-valuenow', Math.round(balancePercentage));
+            
+            // Update fee percentage with color coding
+            if (serviceFee === SERVICE_FEE_MIN && amount > 0) {
+                feePercentage.textContent = "R10 (min)";
+                feePercentage.style.color = "var(--accent-gold)";
+            } else {
+                feePercentage.textContent = "2.5%";
+                feePercentage.style.color = "";
+            }
+            
+            // Add animation class to fee breakdown
+            document.querySelector('.fee-breakdown').classList.add('pulse');
+            setTimeout(() => {
+                document.querySelector('.fee-breakdown').classList.remove('pulse');
+            }, 300);
+        }
+        
+        // Form validation
+        depositForm.addEventListener('submit', function(e) {
+            const amount = parseFloat(amountInput.value) || 0;
+            
+            if (amount < 10) {
+                e.preventDefault();
+                showAlert('Minimum deposit amount is R10', 'warning');
+                amountInput.focus();
+                return;
+            }
+            
+            if (amount > MAX_DEPOSIT) {
+                e.preventDefault();
+                showAlert(`Maximum deposit per transaction is R${MAX_DEPOSIT.toLocaleString()}`, 'warning');
+                amountInput.focus();
+                return;
+            }
+            
+            const newBalance = currentBalance + amount - Math.max((amount * SERVICE_FEE_PERCENT / 100), SERVICE_FEE_MIN);
+            if (newBalance > MAX_BALANCE) {
+                e.preventDefault();
+                showAlert(`Maximum balance limit is R${MAX_BALANCE.toLocaleString()}`, 'warning');
+                amountInput.focus();
+                return;
+            }
+            
+            // Show loading animation on button
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+            submitBtn.disabled = true;
+            
+            // Re-enable after 3 seconds if form doesn't submit
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 3000);
+        });
+        
+        function showAlert(message, type) {
+            // Remove existing alerts
+            document.querySelectorAll('.custom-alert').forEach(alert => alert.remove());
+            
+            // Create new alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-modern custom-alert`;
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Insert after form
+            depositForm.parentNode.insertBefore(alertDiv, depositForm.nextSibling);
+            
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        // Update progress bar animation
+        setTimeout(() => {
+            balanceProgress.style.transition = 'width 1s ease';
+        }, 100);
+        
+        // Add subtle animation to form on load
+        setTimeout(() => {
+            document.querySelector('.deposit-form-container').style.transform = 'translateY(0)';
+            document.querySelector('.deposit-form-container').style.opacity = '1';
+        }, 100);
+    });
+</script>
+{% endblock %}

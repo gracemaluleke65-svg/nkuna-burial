@@ -1,0 +1,820 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Nkuna Burial Society{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Profile Hero Section */
+    .profile-hero {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, #1e3a8a 100%);
+        color: white;
+        padding: 4rem 0;
+        border-radius: 0 0 30px 30px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .profile-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230ea5e9' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        animation: float 20s linear infinite;
+    }
+    
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, var(--primary-teal), #38bdf8);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        border: 5px solid white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .profile-avatar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: 0.5s;
+    }
+    
+    .profile-avatar:hover::after {
+        left: 100%;
+    }
+    
+    .profile-avatar:hover {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 15px 40px rgba(14, 165, 233, 0.4);
+        background: linear-gradient(135deg, var(--accent-gold), #fbbf24);
+    }
+    
+    .profile-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+        background: var(--accent-gold);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        color: var(--primary-dark);
+        border: 2px solid white;
+    }
+    
+    /* Form Styling */
+    .form-modern {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+        border: 2px solid transparent;
+    }
+    
+    .form-modern:hover {
+        border-color: var(--primary-teal);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-5px);
+    }
+    
+    .form-control-modern {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        transition: var(--transition);
+        background: #f8fafc;
+        font-size: 1rem;
+    }
+    
+    .form-control-modern:focus {
+        border-color: var(--primary-teal);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        background: white;
+        transform: translateY(-2px);
+    }
+    
+    .form-label-modern {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-label-modern i {
+        color: var(--primary-teal);
+        transition: var(--transition);
+    }
+    
+    .form-control-modern:focus + .form-label-modern i {
+        color: var(--accent-gold);
+        transform: scale(1.2);
+    }
+    
+    /* Stats Cards */
+    .stat-card-profile {
+        background: linear-gradient(135deg, var(--card-bg), #f1f5f9);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: var(--transition);
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card-profile::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+        transform: translateY(-100%);
+        transition: transform 0.5s ease;
+    }
+    
+    .stat-card-profile:hover::before {
+        transform: translateY(0);
+    }
+    
+    .stat-card-profile:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary-teal);
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(251, 191, 36, 0.1));
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--primary-teal);
+        margin-bottom: 1rem;
+        transition: var(--transition);
+    }
+    
+    .stat-card-profile:hover .stat-icon {
+        background: linear-gradient(135deg, var(--primary-teal), var(--accent-gold));
+        color: white;
+        transform: rotateY(180deg);
+    }
+    
+    /* Toggle Password Visibility */
+    .password-toggle {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text-light);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .password-toggle:hover {
+        color: var(--primary-teal);
+        transform: translateY(-50%) scale(1.2);
+    }
+    
+    /* Tab Navigation */
+    .profile-tabs {
+        border-bottom: 2px solid #e2e8f0;
+        margin-bottom: 2rem;
+    }
+    
+    .profile-tab {
+        padding: 1rem 1.5rem;
+        background: none;
+        border: none;
+        color: var(--text-light);
+        font-weight: 600;
+        position: relative;
+        transition: var(--transition);
+        border-radius: 10px 10px 0 0;
+    }
+    
+    .profile-tab::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+        transition: var(--transition);
+    }
+    
+    .profile-tab:hover {
+        color: var(--primary-teal);
+        background: rgba(14, 165, 233, 0.05);
+    }
+    
+    .profile-tab:hover::after {
+        width: 100%;
+    }
+    
+    .profile-tab.active {
+        color: var(--primary-teal);
+    }
+    
+    .profile-tab.active::after {
+        width: 100%;
+    }
+    
+    /* Form Groups with Animation */
+    .form-group-animated {
+        position: relative;
+        margin-bottom: 1.5rem;
+        transition: var(--transition);
+    }
+    
+    .form-group-animated:focus-within {
+        transform: translateX(5px);
+    }
+    
+    /* Success Message Animation */
+    .success-pulse {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .profile-hero {
+            padding: 3rem 0;
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            font-size: 2.5rem;
+        }
+        
+        .form-modern {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Profile Hero Section -->
+<section class="profile-hero">
+    <div class="container position-relative">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <div class="profile-avatar mb-3 mx-auto">
+                    {{ current_user.first_name[0] }}{{ current_user.last_name[0] }}
+                    {% if current_user.is_admin %}
+                    <div class="profile-badge" title="Administrator">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-10">
+                <h1 class="display-5 fw-bold mb-2">{{ current_user.first_name }} {{ current_user.last_name }}</h1>
+                <p class="lead mb-1 opacity-90">
+                    <i class="fas fa-id-card me-2"></i>ID: {{ current_user.id_number }}
+                </p>
+                <p class="mb-0 opacity-75">
+                    <i class="fas fa-envelope me-2"></i>{{ current_user.email }} • 
+                    <i class="fas fa-phone me-2 ms-3"></i>{{ current_user.phone }} •
+                    <i class="fas fa-calendar me-2 ms-3"></i>Member since {{ current_user.created_at.strftime('%B %Y') }}
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Profile Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Left Column: Account Stats -->
+            <div class="col-lg-4 mb-4">
+                <!-- Account Stats -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="gradient-text fw-bold">Account Overview</h3>
+                        {% if current_user.is_admin %}
+                        <span class="badge bg-gradient-teal px-3 py-2">
+                            <i class="fas fa-crown me-1"></i> Administrator
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="stat-card-profile mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h4 class="fw-bold mb-0">R{{ "%.2f"|format(current_user.virtual_balance) }}</h4>
+                                <p class="text-muted mb-0">Virtual Balance</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-profile mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h4 class="fw-bold mb-0">{{ current_user.policies|length }}</h4>
+                                <p class="text-muted mb-0">Active Policies</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-profile mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon">
+                                <i class="fas fa-hand-holding-heart"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h4 class="fw-bold mb-0">{{ current_user.claims|length }}</h4>
+                                <p class="text-muted mb-0">Total Claims</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-profile">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon">
+                                <i class="fas {% if current_user.registration_fee_paid %}fa-check-circle{% else %}fa-clock{% endif %}"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h4 class="fw-bold mb-0">
+                                    {% if current_user.registration_fee_paid %}Active{% else %}Pending{% endif %}
+                                </h4>
+                                <p class="text-muted mb-0">Account Status</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="card-modern p-4">
+                    <h5 class="fw-bold mb-3">Quick Actions</h5>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-tachometer-alt me-2"></i> Go to Dashboard
+                        </a>
+                        <a href="{{ url_for('main.deposit') }}" class="btn btn-outline-success">
+                            <i class="fas fa-plus-circle me-2"></i> Deposit Funds
+                        </a>
+                        <a href="{{ url_for('main.transactions') }}" class="btn btn-outline-info">
+                            <i class="fas fa-history me-2"></i> View Transactions
+                        </a>
+                        {% if not current_user.registration_fee_paid %}
+                        <a href="{{ url_for('auth.pay_registration_fee') }}" class="btn btn-warning">
+                            <i class="fas fa-credit-card me-2"></i> Pay Registration Fee
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column: Profile Form -->
+            <div class="col-lg-8">
+                <!-- Tab Navigation -->
+                <div class="profile-tabs d-flex">
+                    <button class="profile-tab active" onclick="switchTab('personal')">
+                        <i class="fas fa-user me-2"></i> Personal Information
+                    </button>
+                    <button class="profile-tab" onclick="switchTab('password')">
+                        <i class="fas fa-lock me-2"></i> Change Password
+                    </button>
+                </div>
+                
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-modern alert-dismissible fade show mb-4 
+                                 {% if category == 'success' %}success-pulse{% endif %}" role="alert">
+                                {% if category == 'success' %}
+                                    <i class="fas fa-check-circle me-2"></i>
+                                {% elif category == 'danger' %}
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                {% elif category == 'warning' %}
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle me-2"></i>
+                                {% endif %}
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Personal Information Form -->
+                <div id="personal-tab" class="tab-content">
+                    <div class="form-modern">
+                        <h3 class="gradient-text fw-bold mb-4">Update Personal Information</h3>
+                        
+                        <form method="POST" action="{{ url_for('auth.profile') }}">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="row">
+                                <!-- First Name -->
+                                <div class="col-md-6">
+                                    <div class="form-group-animated mb-4">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-user"></i> First Name
+                                        </label>
+                                        {{ form.first_name(class="form-control form-control-modern", placeholder="Enter your first name") }}
+                                        {% if form.first_name.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.first_name.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Last Name -->
+                                <div class="col-md-6">
+                                    <div class="form-group-animated mb-4">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-user"></i> Last Name
+                                        </label>
+                                        {{ form.last_name(class="form-control form-control-modern", placeholder="Enter your last name") }}
+                                        {% if form.last_name.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.last_name.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Email -->
+                            <div class="form-group-animated mb-4">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-envelope"></i> Email Address
+                                </label>
+                                {{ form.email(class="form-control form-control-modern", placeholder="Enter your email address") }}
+                                {% if form.email.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.email.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Phone -->
+                            <div class="form-group-animated mb-4">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-phone"></i> Phone Number
+                                </label>
+                                {{ form.phone(class="form-control form-control-modern", placeholder="Enter your phone number") }}
+                                {% if form.phone.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.phone.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- ID Number (Read-only) -->
+                            <div class="form-group-animated mb-4">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-id-card"></i> ID Number
+                                </label>
+                                <input type="text" class="form-control form-control-modern" 
+                                       value="{{ current_user.id_number }}" readonly
+                                       style="background-color: #f1f5f9; cursor: not-allowed;">
+                                <small class="text-muted">ID number cannot be changed for security reasons.</small>
+                            </div>
+                            
+                            <!-- Address -->
+                            <div class="form-group-animated mb-4">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-home"></i> Residential Address
+                                </label>
+                                {{ form.address(class="form-control form-control-modern", 
+                                              placeholder="Enter your full residential address", 
+                                              rows="3") }}
+                                {% if form.address.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.address.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <button type="submit" class="btn btn-modern px-4">
+                                    <i class="fas fa-save me-2"></i> Save Changes
+                                </button>
+                                <a href="{{ url_for('main.dashboard') }}" class="text-decoration-none">
+                                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Change Password Form -->
+                <div id="password-tab" class="tab-content" style="display: none;">
+                    <div class="form-modern">
+                        <h3 class="gradient-text fw-bold mb-4">Change Password</h3>
+                        <p class="text-muted mb-4">
+                            Update your account password. Leave these fields blank if you don't want to change your password.
+                        </p>
+                        
+                        <form method="POST" action="{{ url_for('auth.profile') }}">
+                            {{ form.hidden_tag() }}
+                            
+                            <!-- Current Password -->
+                            <div class="form-group-animated mb-4">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-lock"></i> Current Password
+                                </label>
+                                <div class="position-relative">
+                                    {{ form.current_password(class="form-control form-control-modern", 
+                                                           placeholder="Enter your current password",
+                                                           id="current-password") }}
+                                    <button type="button" class="password-toggle" onclick="togglePassword('current-password')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                {% if form.current_password.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.current_password.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- New Password -->
+                            <div class="form-group-animated mb-4">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-key"></i> New Password
+                                </label>
+                                <div class="position-relative">
+                                    {{ form.new_password(class="form-control form-control-modern", 
+                                                        placeholder="Enter your new password",
+                                                        id="new-password") }}
+                                    <button type="button" class="password-toggle" onclick="togglePassword('new-password')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                {% if form.new_password.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.new_password.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <small class="text-muted">Password must be at least 8 characters long.</small>
+                            </div>
+                            
+                            <!-- Confirm Password -->
+                            <div class="form-group-animated mb-4">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-key"></i> Confirm New Password
+                                </label>
+                                <div class="position-relative">
+                                    {{ form.confirm_password(class="form-control form-control-modern", 
+                                                            placeholder="Confirm your new password",
+                                                            id="confirm-password") }}
+                                    <button type="button" class="password-toggle" onclick="togglePassword('confirm-password')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                {% if form.confirm_password.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.confirm_password.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Password Strength Meter -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <small class="text-muted">Password Strength</small>
+                                    <small id="password-strength-text" class="text-muted">Weak</small>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div id="password-strength-bar" class="progress-bar" 
+                                         role="progressbar" style="width: 0%; background: var(--danger);"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <button type="submit" class="btn btn-modern px-4">
+                                    <i class="fas fa-sync-alt me-2"></i> Update Password
+                                </button>
+                                <button type="button" onclick="switchTab('personal')" class="btn btn-outline-secondary">
+                                    <i class="fas fa-user me-2"></i> Back to Profile
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Security Information -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="card-modern p-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4 class="fw-bold mb-2">Account Security</h4>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-shield-alt text-success me-2"></i>
+                        Your account is protected with industry-standard encryption. Last updated: {{ current_user.updated_at.strftime('%d %B %Y at %H:%M') }}
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button class="btn btn-outline-danger" onclick="showLogoutConfirmation()">
+                        <i class="fas fa-sign-out-alt me-2"></i> Logout All Sessions
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Tab switching functionality
+    function switchTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.style.display = 'none';
+        });
+        
+        // Remove active class from all tabs
+        document.querySelectorAll('.profile-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Show selected tab
+        document.getElementById(tabName + '-tab').style.display = 'block';
+        
+        // Add active class to clicked tab
+        event.currentTarget.classList.add('active');
+    }
+    
+    // Password visibility toggle
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const toggle = field.nextElementSibling.querySelector('i');
+        
+        if (field.type === 'password') {
+            field.type = 'text';
+            toggle.classList.remove('fa-eye');
+            toggle.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            toggle.classList.remove('fa-eye-slash');
+            toggle.classList.add('fa-eye');
+        }
+    }
+    
+    // Password strength checker
+    document.getElementById('new-password')?.addEventListener('input', function() {
+        const password = this.value;
+        const strengthBar = document.getElementById('password-strength-bar');
+        const strengthText = document.getElementById('password-strength-text');
+        
+        let strength = 0;
+        let color = 'var(--danger)';
+        
+        // Length check
+        if (password.length >= 8) strength += 25;
+        if (password.length >= 12) strength += 15;
+        
+        // Complexity checks
+        if (/[A-Z]/.test(password)) strength += 20;
+        if (/[a-z]/.test(password)) strength += 20;
+        if (/[0-9]/.test(password)) strength += 20;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 20;
+        
+        // Update progress bar
+        strength = Math.min(strength, 100);
+        strengthBar.style.width = strength + '%';
+        
+        // Update color and text based on strength
+        if (strength < 30) {
+            color = 'var(--danger)';
+            strengthText.textContent = 'Weak';
+        } else if (strength < 70) {
+            color = 'var(--warning)';
+            strengthText.textContent = 'Moderate';
+        } else {
+            color = 'var(--success)';
+            strengthText.textContent = 'Strong';
+        }
+        
+        strengthBar.style.background = color;
+    });
+    
+    // Confirm password match
+    document.getElementById('confirm-password')?.addEventListener('input', function() {
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = this.value;
+        
+        if (confirmPassword && newPassword !== confirmPassword) {
+            this.style.borderColor = 'var(--danger)';
+            this.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+        } else if (confirmPassword) {
+            this.style.borderColor = 'var(--success)';
+            this.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+        }
+    });
+    
+    // Form submission animation
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+                submitBtn.disabled = true;
+            }
+        });
+    });
+    
+    // Logout confirmation
+    function showLogoutConfirmation() {
+        if (confirm('Are you sure you want to logout from all devices? This will end all active sessions.')) {
+            window.location.href = "{{ url_for('auth.logout') }}";
+        }
+    }
+    
+    // Auto-focus on first form field
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstField = document.querySelector('.form-control-modern');
+        if (firstField) {
+            firstField.focus();
+        }
+        
+        // Add floating label effect
+        document.querySelectorAll('.form-control-modern').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.parentElement.classList.remove('focused');
+                }
+            });
+            
+            // Check initial state
+            if (input.value) {
+                input.parentElement.classList.add('focused');
+            }
+        });
+    });
+</script>
+{% endblock %}

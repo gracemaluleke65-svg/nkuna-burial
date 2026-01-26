@@ -1,0 +1,631 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Nkuna Burial Society{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, #1e3a8a 100%);
+        color: white;
+        padding: 6rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%230ea5e9' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        animation: float 20s linear infinite;
+    }
+    
+    @keyframes float {
+        0% { transform: translateY(0px) rotate(0deg); }
+        100% { transform: translateY(-100px) rotate(360deg); }
+    }
+    
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(45deg, white, #bae6fd);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.25rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+        max-width: 600px;
+    }
+    
+    /* Feature Cards */
+    .feature-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 2.5rem;
+        height: 100%;
+        transition: var(--transition);
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feature-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+        transform: translateY(-100%);
+        transition: transform 0.5s ease;
+    }
+    
+    .feature-card:hover::after {
+        transform: translateY(0);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: var(--primary-teal);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary-teal), #38bdf8);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        font-size: 2rem;
+        color: white;
+        transition: var(--transition);
+    }
+    
+    .feature-card:hover .feature-icon {
+        transform: rotateY(180deg) scale(1.1);
+        background: linear-gradient(135deg, var(--accent-gold), #fbbf24);
+    }
+    
+    /* How It Works */
+    .step-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 2rem;
+        position: relative;
+        transition: var(--transition);
+        border-left: 5px solid var(--primary-teal);
+    }
+    
+    .step-card:hover {
+        border-left-color: var(--accent-gold);
+        transform: translateX(10px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .step-number {
+        position: absolute;
+        top: -20px;
+        left: -20px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 800;
+        font-size: 1.5rem;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+    }
+    
+    .step-card:hover .step-number {
+        background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+        transform: scale(1.1) rotate(10deg);
+    }
+    
+    /* Developer Section */
+    .developer-section {
+        background: linear-gradient(135deg, #0f172a 0%, var(--primary-dark) 100%);
+        color: white;
+        border-radius: 24px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .developer-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold), #10b981);
+    }
+    
+    .developer-image {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        border: 5px solid var(--primary-teal);
+        object-fit: cover;
+        transition: var(--transition);
+        box-shadow: 0 10px 30px rgba(14, 165, 233, 0.3);
+    }
+    
+    .developer-image:hover {
+        transform: scale(1.05) rotate(5deg);
+        border-color: var(--accent-gold);
+        box-shadow: 0 15px 40px rgba(251, 191, 36, 0.4);
+    }
+    
+    .skill-tag {
+        background: rgba(14, 165, 233, 0.15);
+        border: 1px solid var(--primary-teal);
+        color: #bae6fd;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        transition: var(--transition);
+        display: inline-block;
+        margin: 0.25rem;
+    }
+    
+    .skill-tag:hover {
+        background: var(--primary-teal);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(14, 165, 233, 0.3);
+    }
+    
+    /* Stats Counter */
+    .stat-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        transition: var(--transition);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-teal);
+        background: rgba(14, 165, 233, 0.1);
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(45deg, var(--primary-teal), var(--accent-gold));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        line-height: 1;
+    }
+    
+    /* CTA Button */
+    .cta-button {
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        color: white;
+        padding: 1rem 2.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        border: none;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3);
+    }
+    
+    .cta-button:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 15px 30px rgba(14, 165, 233, 0.4);
+        background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+    }
+    
+    .cta-button:active {
+        transform: translateY(-1px);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .feature-card, .step-card {
+            padding: 1.5rem;
+        }
+        
+        .developer-image {
+            width: 150px;
+            height: 150px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container position-relative">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="hero-title">Digital Burial Society Management Platform</h1>
+                <p class="hero-subtitle">Modernizing traditional burial societies with transparent digital solutions for membership management, premium payments, and claims processing.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="#features" class="btn btn-modern btn-lg">
+                        <i class="fas fa-rocket me-2"></i> Explore Features
+                    </a>
+                    {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('auth.register') }}" class="cta-button">
+                        <i class="fas fa-user-plus me-2"></i> Get Started Free
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3 col-6">
+                <div class="stat-card hover-lift">
+                    <div class="stat-number">15.4M+</div>
+                    <p class="text-muted mb-0">South Africans in Burial Societies</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card hover-lift">
+                    <div class="stat-number">R50B+</div>
+                    <p class="text-muted mb-0">Annual Contributions Managed</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card hover-lift">
+                    <div class="stat-number">70%</div>
+                    <p class="text-muted mb-0">Faster Claims Processing</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card hover-lift">
+                    <div class="stat-number">80%</div>
+                    <p class="text-muted mb-0">Reduced Admin Time</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5 bg-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="gradient-text display-5 fw-bold mb-3">Platform Features</h2>
+            <p class="lead text-muted">Everything you need to manage your burial society digitally</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Digital Membership Management</h4>
+                    <p class="text-muted">Online registration with digital document upload, automated age verification, and real-time member directory with status tracking.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Family grouping (up to 15 members)</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Automated premium calculation</li>
+                        <li><i class="fas fa-check text-success me-2"></i> Real-time status updates</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Automated Premium Management</h4>
+                    <p class="text-muted">Virtual balance system with transparent fee structure, flexible deposit limits, and automated payment reminders.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> R50,000 per transaction limit</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> R100,000 balance cap</li>
+                        <li><i class="fas fa-check text-success me-2"></i> Transparent fee breakdown</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Streamlined Claims Processing</h4>
+                    <p class="text-muted">Digital claims submission with document upload, admin verification workflow, and automated payout calculations.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Document upload system</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Admin approval workflow</li>
+                        <li><i class="fas fa-check text-success me-2"></i> Complete audit trail</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="gradient-text display-5 fw-bold mb-3">How It Works</h2>
+            <p class="lead text-muted">Four simple steps to get started with digital burial society management</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h4 class="fw-bold mb-3">Register Account</h4>
+                    <p class="text-muted">Create your account with South African ID verification and complete your profile.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h4 class="fw-bold mb-3">Create Policy</h4>
+                    <p class="text-muted">Set up your burial policy with coverage amount and add family members (up to 15).</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h4 class="fw-bold mb-3">Make Deposits</h4>
+                    <p class="text-muted">Deposit funds to your virtual balance with transparent service fees and limits.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h4 class="fw-bold mb-3">Manage & Claim</h4>
+                    <p class="text-muted">Pay premiums, track transactions, and submit claims when needed with full digital support.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Fee Structure -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="gradient-text display-5 fw-bold mb-3">Transparent Fee Structure</h2>
+            <p class="lead text-muted">Clear pricing with no hidden costs</p>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card-modern p-4">
+                    <div class="table-responsive">
+                        <table class="table table-modern">
+                            <thead>
+                                <tr>
+                                    <th>Fee Type</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Monthly Service Fee</strong></td>
+                                    <td class="text-success">2.5% (min R10)</td>
+                                    <td>Applied to all deposits for platform maintenance</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Claim Processing Fee</strong></td>
+                                    <td class="text-success">1% (min R50)</td>
+                                    <td>One-time fee for claim verification and processing</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Late Payment Fee</strong></td>
+                                    <td class="text-success">R50 flat</td>
+                                    <td>Applied to overdue premium payments</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Membership Fee</strong></td>
+                                    <td class="text-success">R100 one-time</td>
+                                    <td>Initial registration and account setup</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Developer Section -->
+<!-- Developer Section -->
+<section id="developer" class="py-5">
+    <div class="container">
+        <div class="developer-section p-5">
+            <!-- Section Header -->
+            <div class="text-center mb-5">
+                <h2 class="gradient-text display-5 fw-bold mb-3">System Developer</h2>
+                <p class="lead text-light">Meet the developer behind this platform</p>
+            </div>
+            
+            <div class="row align-items-center">
+                <!-- Left Column: Image, Name, Title, Contact & Portfolio -->
+                <div class="col-lg-4 text-center mb-4 mb-lg-0">
+                    <img src="{{ url_for('static', filename='images/Shichabo.jpg') }}" 
+                         alt="Shichabo Nkuna" 
+                         class="developer-image rounded-circle"
+                         onerror="this.src='https://ui-avatars.com/api/?name=Shichabo+Nkuna&background=0ea5e9&color=fff&size=200'">
+                    
+                    <h3 class="mt-4 fw-bold text-white">SHICHABO NKUNA</h3>
+                    <p class="text-light">Full-Stack Developer & System Analyst</p>
+
+                    <!-- Contact & Portfolio Buttons -->
+                    <div class="d-flex flex-column gap-2 mt-3">
+                        <a href="https://shichabonkuna22-star.github.io/portfolio/" 
+                           target="_blank"
+                           class="btn btn-modern w-100">
+                            <i class="fas fa-globe me-2"></i> Portfolio
+                        </a>
+                        <a href="mailto:shichabonkuna22@gmail.com" 
+                           class="btn btn-outline-light w-100">
+                            <i class="fas fa-envelope me-2"></i> Email
+                        </a>
+                        <a href="tel:+27627195389" 
+                           class="btn btn-outline-light w-100">
+                            <i class="fas fa-phone me-2"></i> 062 719 5389
+                        </a>
+                        <span class="btn btn-outline-light w-100">
+                            <i class="fas fa-map-marker-alt me-2"></i> Johannesburg, SA
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Right Column: About the Developer Card -->
+                <div class="col-lg-8">
+                    <div class="card-modern glass-effect p-4">
+                        <h4 class="fw-bold text-white mb-3">About the Developer</h4>
+                        <p class="text-light mb-4">
+                            ICT Graduate specializing in software development with hands-on experience in building scalable applications. 
+                            Proficient in Python (Flask), C#, ASP.NET MVC, SQL Server, and JavaScript with cloud deployment expertise on 
+                            Microsoft Azure and Oracle Cloud Infrastructure (OCI).
+                        </p>
+                        
+                        <p class="text-light mb-4">
+                            Developed 15+ full-stack projects with a strong understanding of SDLC, OOP, Agile methodologies, and software 
+                            testing. A detail-oriented problem-solver passionate about building reliable and scalable systems that solve 
+                            real-world challenges.
+                        </p>
+                        
+                        <h5 class="fw-bold text-white mb-3">Education & Certifications</h5>
+                        <ul class="text-light mb-4">
+                            <li class="mb-2">
+                                <i class="fas fa-graduation-cap text-warning me-2"></i>
+                                Diploma in Information and Communication Technology (ICT) - Durban University of Technology (2023–2025)
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-certificate text-warning me-2"></i>
+                                5x Oracle Cloud Infrastructure Certifications (2025)
+                            </li>
+                            <li>
+                                <i class="fas fa-certificate text-warning me-2"></i>
+                                Cisco Networking Academy Certifications (Cybersecurity & Networking)
+                            </li>
+                        </ul>
+                        
+                        <h5 class="fw-bold text-white mb-3">Technical Skills</h5>
+                        <div class="mb-4">
+                            <span class="skill-tag">Python Flask</span>
+                            <span class="skill-tag">ASP.NET MVC</span>
+                            <span class="skill-tag">C#</span>
+                            <span class="skill-tag">SQL Server</span>
+                            <span class="skill-tag">JavaScript</span>
+                            <span class="skill-tag">Oracle Cloud (OCI)</span>
+                            <span class="skill-tag">Microsoft Azure</span>
+                            <span class="skill-tag">Full-Stack Development</span>
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <small class="text-light opacity-75">
+                                This platform was architected and developed by Shichabo Nkuna as a complete digital solution 
+                                for burial society management in South Africa.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-white">
+    <div class="container text-center">
+        <h2 class="gradient-text display-5 fw-bold mb-4">Ready to Modernize Your Burial Society?</h2>
+        <p class="lead text-muted mb-4">Join thousands of South Africans who trust our digital platform for transparent, efficient burial society management.</p>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.register') }}" class="cta-button">
+                <i class="fas fa-user-plus me-2"></i> Create Free Account
+            </a>
+            <a href="#features" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-info-circle me-2"></i> Learn More
+            </a>
+            {% else %}
+            <a href="{{ url_for('main.dashboard') }}" class="cta-button">
+                <i class="fas fa-tachometer-alt me-2"></i> Go to Dashboard
+            </a>
+            <a href="{{ url_for('main.create_policy') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-plus-circle me-2"></i> Create New Policy
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animate stats counter
+    document.addEventListener('DOMContentLoaded', function() {
+        const statNumbers = document.querySelectorAll('.stat-number');
+        
+        statNumbers.forEach(stat => {
+            const target = parseInt(stat.textContent.replace(/[^0-9]/g, ''));
+            const duration = 2000;
+            const increment = target / (duration / 16);
+            let current = 0;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    stat.textContent = stat.textContent.replace(/[0-9]+/, target.toLocaleString());
+                    clearInterval(timer);
+                } else {
+                    const displayNum = Math.floor(current).toLocaleString();
+                    stat.textContent = stat.textContent.replace(/[0-9,]+/, displayNum);
+                }
+            }, 16);
+        });
+        
+        // Parallax effect for hero section
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const hero = document.querySelector('.hero-section');
+            if (hero) {
+                hero.style.transform = `translateY(${scrolled * 0.1}px)`;
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,1458 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Claim - Nkuna Burial Society{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Claim Submission Specific Styles */
+    .claim-header {
+        background: linear-gradient(135deg, #0f172a 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 3rem 0;
+        border-radius: 0 0 20px 20px;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .claim-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+    }
+    
+    /* Form Card */
+    .form-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid #e2e8f0;
+        transition: var(--transition);
+        margin-bottom: 2rem;
+    }
+    
+    .form-card:hover {
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: var(--primary-teal);
+    }
+    
+    .form-card h3 {
+        color: var(--primary-dark);
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 3px solid var(--primary-teal);
+        position: relative;
+    }
+    
+    .form-card h3::after {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 0;
+        width: 100px;
+        height: 3px;
+        background: var(--accent-gold);
+        border-radius: 0 0 3px 3px;
+    }
+    
+    /* Member Selection Card with Status */
+    .member-selection-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 2px solid #e2e8f0;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: var(--transition);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .member-selection-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 0;
+        background: var(--primary-teal);
+        transition: height 0.3s ease;
+    }
+    
+    .member-selection-card:hover::before {
+        height: 100%;
+    }
+    
+    .member-selection-card:hover {
+        transform: translateY(-3px);
+        border-color: var(--primary-teal);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .member-selection-card.selected {
+        border-color: var(--accent-gold);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(251, 191, 36, 0.1) 100%);
+    }
+    
+    .member-selection-card.selected::before {
+        height: 100%;
+        background: var(--accent-gold);
+    }
+    
+    .member-selection-card.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: #f8f9fa;
+    }
+    
+    .member-selection-card.disabled:hover {
+        transform: none;
+        border-color: #e2e8f0;
+        box-shadow: none;
+    }
+    
+    .member-selection-card.disabled::before {
+        background: #6c757d;
+    }
+    
+    .member-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .member-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-teal), #38bdf8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+        flex-shrink: 0;
+        transition: var(--transition);
+    }
+    
+    .member-selection-card:hover .member-avatar {
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    .member-selection-card.selected .member-avatar {
+        background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+    }
+    
+    /* Member Status Indicators */
+    .member-status-indicator {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    
+    .status-active {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-claim-processed {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    .status-inactive {
+        background: linear-gradient(135deg, rgba(108, 117, 125, 0.15), rgba(108, 117, 125, 0.05));
+        color: #6c757d;
+        border: 1px solid rgba(108, 117, 125, 0.3);
+    }
+    
+    /* Enhanced Form Controls */
+    .form-control-modern {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: var(--transition);
+        background: white;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .form-control-modern:focus {
+        border-color: var(--primary-teal);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+        transform: translateY(-2px);
+        outline: none;
+    }
+    
+    /* File Upload with Enhanced Preview */
+    .file-upload-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        width: 100%;
+    }
+    
+    .file-upload-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        border: 2px dashed #cbd5e1;
+        border-radius: 12px;
+        background: #f8fafc;
+        color: var(--text-light);
+        cursor: pointer;
+        transition: var(--transition);
+        text-align: center;
+        min-height: 120px;
+    }
+    
+    .file-upload-label:hover {
+        border-color: var(--primary-teal);
+        background: rgba(14, 165, 233, 0.05);
+        transform: translateY(-2px);
+        color: var(--primary-teal);
+    }
+    
+    .file-preview {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #f1f5f9;
+        border-radius: 10px;
+        border-left: 4px solid var(--primary-teal);
+        display: none;
+    }
+    
+    .file-preview.show {
+        display: block;
+        animation: slideIn 0.3s ease;
+    }
+    
+    /* Enhanced Progress Steps */
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+    
+    .progress-steps::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #e2e8f0;
+        z-index: 1;
+    }
+    
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #94a3b8;
+        margin-bottom: 0.5rem;
+        transition: var(--transition);
+    }
+    
+    .step.active .step-circle {
+        background: var(--primary-teal);
+        border-color: var(--primary-teal);
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .step.completed .step-circle {
+        background: var(--accent-gold);
+        border-color: var(--accent-gold);
+        color: white;
+    }
+    
+    .step.completed .step-circle::after {
+        content: '✓';
+    }
+    
+    /* Enhanced Submit Button */
+    .submit-btn-wrapper {
+        position: relative;
+        margin-top: 2rem;
+    }
+    
+    .submit-btn {
+        background: linear-gradient(135deg, var(--primary-teal) 0%, #0284c7 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3);
+    }
+    
+    .submit-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: 0.5s;
+    }
+    
+    .submit-btn:hover::before {
+        left: 100%;
+    }
+    
+    .submit-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(14, 165, 233, 0.4);
+        background: linear-gradient(135deg, #0284c7 0%, var(--primary-teal) 100%);
+    }
+    
+    .submit-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    }
+    
+    /* Claim Status Alert */
+    .claim-status-alert {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+        border: 2px solid #f59e0b;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: none;
+    }
+    
+    .claim-status-alert.show {
+        display: block;
+        animation: slideIn 0.3s ease;
+    }
+    
+    /* Bank Selection Styles */
+    .bank-option {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0;
+    }
+    
+    .bank-logo {
+        width: 24px;
+        height: 24px;
+        margin-right: 10px;
+        object-fit: contain;
+    }
+    
+    .bank-name {
+        font-weight: 500;
+    }
+    
+    .branch-code-hint {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+    
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-card {
+            padding: 1.5rem;
+        }
+        
+        .progress-steps {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .progress-steps::before {
+            display: none;
+        }
+        
+        .step {
+            flex-direction: row;
+            gap: 1rem;
+        }
+        
+        .step-circle {
+            margin-bottom: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Enhanced Claim Status Check -->
+<div id="claimStatusAlert" class="claim-status-alert" style="display: none;">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-exclamation-triangle text-warning me-3"></i>
+        <div>
+            <strong>Member Status Alert:</strong>
+            <span id="claimStatusText"></span>
+        </div>
+    </div>
+</div>
+
+<!-- Claim Submission Header -->
+<div class="claim-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold mb-3">Submit Funeral Claim</h1>
+                <p class="lead mb-0">
+                    Complete this form to submit a funeral claim. Please ensure all information is accurate and 
+                    all required documents are uploaded for faster processing.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="card-modern p-3 d-inline-block">
+                    <small class="text-muted d-block">Estimated Processing</small>
+                    <h4 class="gradient-text mb-0">3-5 Business Days</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Steps -->
+<div class="container">
+    <div class="progress-steps">
+        <div class="step active">
+            <div class="step-circle">1</div>
+            <div class="step-label">Select Member</div>
+        </div>
+        <div class="step">
+            <div class="step-circle">2</div>
+            <div class="step-label">Claim Details</div>
+        </div>
+        <div class="step">
+            <div class="step-circle">3</div>
+            <div class="step-label">Upload Documents</div>
+        </div>
+        <div class="step">
+            <div class="step-circle">4</div>
+            <div class="step-label">Bank Details</div>
+        </div>
+        <div class="step">
+            <div class="step-circle">5</div>
+            <div class="step-label">Review & Submit</div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Claim Submission Form -->
+<div class="container">
+    <form method="POST" action="{{ url_for('main.submit_claim') }}" enctype="multipart/form-data" id="claimForm">
+        {{ form.hidden_tag() }}
+        
+        <!-- Step 1: Policy & Member Selection with Status Filtering -->
+        <div class="form-card">
+            <h3><i class="fas fa-user-circle me-2"></i> Step 1: Select Policy & Member</h3>
+            
+            <div class="alert alert-modern alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Important:</strong> Only active members are eligible for claims. Members with processed claims are excluded.
+            </div>
+            
+            {% if policy_choices %}
+            <div class="row">
+                {% for choice in policy_choices %}
+                <div class="col-lg-6 mb-3">
+                    {% set is_eligible = choice.member_status == 'active' and not choice.has_claim %}
+                    {% set is_disabled = not is_eligible %}
+                    
+                    <div class="member-selection-card {% if is_disabled %}disabled{% endif %}" 
+                         onclick="{% if is_eligible %}selectMember('{{ choice.policy_id }}', '{{ choice.member_id }}', this, '{{ choice.member_name }}', '{{ choice.relationship }}'){% else %}showMemberStatusAlert('{{ choice.member_status }}', '{{ choice.has_claim }}', '{{ choice.member_name }}'){% endif %}">
+                        
+                        {% if choice.has_claim %}
+                        <div class="member-status-indicator status-claim-processed">
+                            <i class="fas fa-hand-holding-usd"></i> Claim Processed
+                        </div>
+                        {% elif choice.member_status == 'inactive' %}
+                        <div class="member-status-indicator status-inactive">
+                            <i class="fas fa-user-times"></i> Inactive
+                        </div>
+                        {% else %}
+                        <div class="member-status-indicator status-active">
+                            <i class="fas fa-check-circle"></i> Active
+                        </div>
+                        {% endif %}
+                        
+                        <div class="member-info">
+                            <div class="member-avatar">
+                                {{ choice.member_name.split(' ')[0][0] }}{{ choice.member_name.split(' ')[-1][0] }}
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">{{ choice.member_name }}</h6>
+                                <p class="text-muted mb-1 small">
+                                    <i class="fas fa-file-contract me-1"></i> {{ choice.policy_name }}
+                                </p>
+                                <p class="text-muted mb-0 small">
+                                    <i class="fas fa-hashtag me-1"></i> {{ choice.policy_number }}
+                                </p>
+                                {% if choice.member_age %}
+                                <p class="text-muted small">
+                                    <i class="fas fa-birthday-cake me-1"></i> {{ choice.member_age }} years old
+                                </p>
+                                {% endif %}
+                                {% if choice.relationship %}
+                                <p class="text-muted small">
+                                    <i class="fas fa-users me-1"></i> {{ choice.relationship|title }}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="alert alert-modern alert-warning mt-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Note:</strong> You've selected: 
+                <span id="selectedMemberDisplay" class="fw-bold">No member selected</span>
+            </div>
+            
+            <input type="hidden" name="policy_id" id="selectedPolicyId" required>
+            <input type="hidden" name="member_id" id="selectedMemberId" required>
+            <input type="hidden" name="relationship" id="selectedRelationship" required>
+            
+            {% else %}
+            <div class="alert alert-modern alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <strong>No eligible members available!</strong> 
+                {% if not current_user.registration_fee_paid %}
+                    Please pay the registration fee first.
+                    <a href="{{ url_for('auth.pay_registration_fee') }}" class="alert-link">Pay Registration Fee</a>
+                {% else %}
+                    All members either have processed claims or are inactive.
+                    <a href="{{ url_for('main.dashboard') }}" class="alert-link">View your policies</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Step 2: Enhanced Claim Details -->
+        <div class="form-card">
+            <h3><i class="fas fa-file-medical me-2"></i> Step 2: Claim Details</h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group-modern">
+                        <label for="deceased_name">
+                            <i class="fas fa-user"></i> Deceased Full Name *
+                        </label>
+                        {{ form.deceased_name(class="form-control form-control-modern", placeholder="Enter full name of deceased") }}
+                        {% if form.deceased_name.errors %}
+                        <div class="error-message">
+                            {% for error in form.deceased_name.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group-modern">
+                        <label for="relationship">
+                            <i class="fas fa-users"></i> Relationship to Policy Holder
+                        </label>
+                        <input type="text" class="form-control form-control-modern" 
+                               id="relationshipDisplay" readonly placeholder="Will be auto-filled based on selection">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group-modern">
+                        <label for="date_of_death">
+                            <i class="fas fa-calendar-times"></i> Date of Death *
+                        </label>
+                        {{ form.date_of_death(class="form-control form-control-modern", type="date") }}
+                        {% if form.date_of_death.errors %}
+                        <div class="error-message">
+                            {% for error in form.date_of_death.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-group-modern">
+                        <label for="date_of_burial">
+                            <i class="fas fa-monument"></i> Date of Burial *
+                        </label>
+                        {{ form.date_of_burial(class="form-control form-control-modern", type="date") }}
+                        {% if form.date_of_burial.errors %}
+                        <div class="error-message">
+                            {% for error in form.date_of_burial.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-group-modern">
+                        <label for="cause_of_death">
+                            <i class="fas fa-stethoscope"></i> Cause of Death
+                        </label>
+                        {{ form.cause_of_death(class="form-control form-control-modern", placeholder="Optional - e.g., Natural causes, Illness, Accident") }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group-modern">
+                <label for="place_of_death">
+                    <i class="fas fa-map-marker-alt"></i> Place of Death
+                </label>
+                {{ form.place_of_death(class="form-control form-control-modern", placeholder="Hospital, Home, etc. (Optional)") }}
+            </div>
+        </div>
+        
+        <!-- Step 3: Enhanced Document Upload -->
+        <div class="form-card">
+            <h3><i class="fas fa-file-upload me-2"></i> Step 3: Upload Required Documents</h3>
+            
+            <div class="alert alert-modern alert-info">
+                <i class="fas fa-file-pdf me-2"></i>
+                <strong>Accepted formats:</strong> PDF, JPG, JPEG, PNG (Max 5MB each)
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group-modern">
+                        <label>
+                            <i class="fas fa-file-certificate"></i> Death Certificate *
+                        </label>
+                        <div class="file-upload-wrapper">
+                            {{ form.death_certificate(class="file-upload-input", accept=".pdf,.jpg,.jpeg,.png") }}
+                            <div class="file-upload-label" id="deathCertLabel">
+                                <div>
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p class="mb-0">Click to upload<br>
+                                    <small>Death Certificate</small></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="file-preview" id="deathCertPreview"></div>
+                        {% if form.death_certificate.errors %}
+                        <div class="error-message">
+                            {% for error in form.death_certificate.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-group-modern">
+                        <label>
+                            <i class="fas fa-id-card"></i> ID Copy *
+                        </label>
+                        <div class="file-upload-wrapper">
+                            {{ form.id_copy(class="file-upload-input", accept=".pdf,.jpg,.jpeg,.png") }}
+                            <div class="file-upload-label" id="idCopyLabel">
+                                <div>
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p class="mb-0">Click to upload<br>
+                                    <small>ID Copy of Deceased</small></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="file-preview" id="idCopyPreview"></div>
+                        {% if form.id_copy.errors %}
+                        <div class="error-message">
+                            {% for error in form.id_copy.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-group-modern">
+                        <label>
+                            <i class="fas fa-file-signature"></i> Burial Order *
+                        </label>
+                        <div class="file-upload-wrapper">
+                            {{ form.burial_order(class="file-upload-input", accept=".pdf,.jpg,.jpeg,.png") }}
+                            <div class="file-upload-label" id="burialOrderLabel">
+                                <div>
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p class="mb-0">Click to upload<br>
+                                    <small>Burial Order/Permit</small></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="file-preview" id="burialOrderPreview"></div>
+                        {% if form.burial_order.errors %}
+                        <div class="error-message">
+                            {% for error in form.burial_order.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 4: Enhanced Bank Details -->
+        <div class="form-card">
+            <h3><i class="fas fa-university me-2"></i> Step 4: Bank Details for Payout</h3>
+            
+            <div class="alert alert-modern alert-warning">
+                <i class="fas fa-shield-alt me-2"></i>
+                <strong>Security Note:</strong> Your bank details are encrypted and stored securely. 
+                All payouts are processed within 3-5 business days after claim approval.
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group-modern">
+                        <label for="bank_name">
+                            <i class="fas fa-bank"></i> Bank Name *
+                        </label>
+                        <select name="bank_name" id="bank_name" class="form-control form-control-modern" required>
+                            <option value="">Select your bank...</option>
+                            <option value="ABSA">ABSA</option>
+                            <option value="African Bank">African Bank</option>
+                            <option value="Bidvest Bank">Bidvest Bank</option>
+                            <option value="Capitec Bank">Capitec Bank</option>
+                            <option value="Discovery Bank">Discovery Bank</option>
+                            <option value="First National Bank (FNB)">First National Bank (FNB)</option>
+                            <option value="Investec">Investec</option>
+                            <option value="Nedbank">Nedbank</option>
+                            <option value="Standard Bank">Standard Bank</option>
+                            <option value="TymeBank">TymeBank</option>
+                            <option value="Other">Other (Please specify)</option>
+                        </select>
+                        <div class="branch-code-hint" id="branchCodeHint">
+                            Select a bank to auto-fill the branch code
+                        </div>
+                        {% if form.bank_name.errors %}
+                        <div class="error-message">
+                            {% for error in form.bank_name.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group-modern">
+                        <label for="account_holder">
+                            <i class="fas fa-user-tie"></i> Account Holder Name *
+                        </label>
+                        {{ form.account_holder(class="form-control form-control-modern", placeholder="Name as it appears on bank account") }}
+                        {% if form.account_holder.errors %}
+                        <div class="error-message">
+                            {% for error in form.account_holder.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group-modern">
+                        <label for="account_number">
+                            <i class="fas fa-credit-card"></i> Account Number *
+                        </label>
+                        {{ form.account_number(class="form-control form-control-modern", placeholder="e.g., 12345678901") }}
+                        {% if form.account_number.errors %}
+                        <div class="error-message">
+                            {% for error in form.account_number.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group-modern">
+                        <label for="branch_code">
+                            <i class="fas fa-code-branch"></i> Branch Code *
+                        </label>
+                        <div class="input-group">
+                            {{ form.branch_code(class="form-control form-control-modern", id="branch_code", placeholder="Will be auto-filled", readonly=True) }}
+                            <button type="button" class="btn btn-outline-secondary" id="editBranchCodeBtn" style="border-radius: 0 12px 12px 0;">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                        {% if form.branch_code.errors %}
+                        <div class="error-message">
+                            {% for error in form.branch_code.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Custom Bank Details (shown when "Other" is selected) -->
+            <div id="customBankSection" style="display: none;">
+                <div class="alert alert-modern alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Custom Bank Details:</strong> Please provide the name of your bank and the correct branch code.
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group-modern">
+                            <label for="custom_bank_name">
+                                <i class="fas fa-bank"></i> Custom Bank Name *
+                            </label>
+                            <input type="text" class="form-control form-control-modern" 
+                                   id="custom_bank_name" name="custom_bank_name" 
+                                   placeholder="Enter your bank name">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group-modern">
+                            <label for="custom_branch_code">
+                                <i class="fas fa-code-branch"></i> Custom Branch Code *
+                            </label>
+                            <input type="text" class="form-control form-control-modern" 
+                                   id="custom_branch_code" name="custom_branch_code" 
+                                   placeholder="Enter branch code">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 5: Enhanced Review & Submit -->
+        <div class="form-card">
+            <h3><i class="fas fa-clipboard-check me-2"></i> Step 5: Review & Submit</h3>
+            
+            <div class="info-box">
+                <h5><i class="fas fa-check-circle"></i> Before You Submit</h5>
+                <ul>
+                    <li>Verify all information is correct and complete</li>
+                    <li>Ensure all required documents are uploaded</li>
+                    <li>Double-check bank details for accuracy</li>
+                    <li>Note that changes cannot be made after submission</li>
+                </ul>
+            </div>
+            
+            <!-- Enhanced Claim Summary Preview -->
+            <div class="card-modern p-3 mb-3">
+                <h5 class="fw-bold mb-3">Claim Summary</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Selected Member:</strong> <span id="summaryMember">Not selected</span></p>
+                        <p class="mb-2"><strong>Relationship:</strong> <span id="summaryRelationship">Not specified</span></p>
+                        <p class="mb-2"><strong>Date of Death:</strong> <span id="summaryDeathDate">Not specified</span></p>
+                        <p class="mb-2"><strong>Date of Burial:</strong> <span id="summaryBurialDate">Not specified</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Bank Name:</strong> <span id="summaryBank">Not specified</span></p>
+                        <p class="mb-2"><strong>Account Holder:</strong> <span id="summaryAccountHolder">Not specified</span></p>
+                        <p class="mb-2"><strong>Branch Code:</strong> <span id="summaryBranchCode">Not specified</span></p>
+                        <p class="mb-2"><strong>Documents Uploaded:</strong> <span id="summaryDocuments">0/3</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Terms Agreement -->
+            <div class="form-check mb-4">
+                <input class="form-check-input" type="checkbox" id="termsAgreement" required>
+                <label class="form-check-label" for="termsAgreement">
+                    I certify that all information provided is true and accurate to the best of my knowledge. 
+                    I understand that providing false information may result in claim rejection and legal action.
+                    I confirm that the deceased member was covered under this policy at the time of death.
+                </label>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="submit-btn-wrapper">
+                <button type="submit" class="submit-btn" id="submitButton" {% if not policy_choices %}disabled{% endif %}>
+                    <i class="fas fa-paper-plane me-2"></i> Submit Claim for Review
+                </button>
+                <p class="text-muted text-center mt-2 small">
+                    <i class="fas fa-clock me-1"></i> Estimated processing time: 3-5 business days
+                </p>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Enhanced Member Status Management
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show member status alert
+        window.showMemberStatusAlert = function(status, hasClaim, memberName) {
+            const alert = document.getElementById('claimStatusAlert');
+            const alertText = document.getElementById('claimStatusText');
+            
+            let message = '';
+            if (hasClaim === 'True') {
+                message = `${memberName} has already processed a claim and is no longer eligible for coverage.`;
+            } else if (status === 'inactive') {
+                message = `${memberName} is currently inactive and not eligible for claims.`;
+            }
+            
+            alertText.textContent = message;
+            alert.classList.add('show');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        };
+
+        // Enhanced Member Selection
+        let selectedCard = null;
+        
+        window.selectMember = function(policyId, memberId, cardElement, memberName, relationship) {
+            // Remove selected class from all cards
+            document.querySelectorAll('.member-selection-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked card
+            cardElement.classList.add('selected');
+            selectedCard = cardElement;
+            
+            // Update hidden inputs
+            document.getElementById('selectedPolicyId').value = policyId;
+            document.getElementById('selectedMemberId').value = memberId;
+            document.getElementById('selectedRelationship').value = relationship;
+            
+            // Update display
+            document.getElementById('selectedMemberDisplay').textContent = `${memberName}`;
+            document.getElementById('summaryMember').textContent = memberName;
+            document.getElementById('summaryRelationship').textContent = relationship;
+            
+            // Auto-fill deceased name if it's the policy owner
+            if (relationship === 'Policy Holder (Self)') {
+                document.getElementById('deceased_name').value = memberName.replace(' (Policy Owner)', '');
+            }
+            
+            // Update progress steps
+            updateProgressStep(2);
+            enableForm();
+            
+            // Show success notification
+            const notification = document.createElement('div');
+            notification.className = 'alert alert-success alert-dismissible fade show mt-3';
+            notification.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>
+                Selected: ${memberName} (${relationship})
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            cardElement.parentElement.appendChild(notification);
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        };
+
+        // Enhanced Bank Details Management
+        const bankBranchCodes = {
+            'ABSA': '632005',
+            'African Bank': '430000',
+            'Bidvest Bank': '462005',
+            'Capitec Bank': '470010',
+            'Discovery Bank': '679000',
+            'First National Bank (FNB)': '250655',
+            'Investec': '580105',
+            'Nedbank': '198765',
+            'Standard Bank': '051001',
+            'TymeBank': '678910',
+            'Other': ''
+        };
+
+        const bankDescriptions = {
+            'ABSA': 'ABSA Bank - Universal Branch Code',
+            'African Bank': 'African Bank - Main Branch Code',
+            'Bidvest Bank': 'Bidvest Bank - Universal Branch Code',
+            'Capitec Bank': 'Capitec Bank - Universal Branch Code',
+            'Discovery Bank': 'Discovery Bank - Main Branch Code',
+            'First National Bank (FNB)': 'FNB - Universal Branch Code',
+            'Investec': 'Investec - Main Branch Code',
+            'Nedbank': 'Nedbank - Universal Branch Code',
+            'Standard Bank': 'Standard Bank - Universal Branch Code',
+            'TymeBank': 'TymeBank - Digital Bank Code',
+            'Other': 'Custom bank - Please enter details'
+        };
+
+        const bankSelect = document.getElementById('bank_name');
+        const branchCodeInput = document.getElementById('branch_code');
+        const editBranchCodeBtn = document.getElementById('editBranchCodeBtn');
+        const customBankSection = document.getElementById('customBankSection');
+        const branchCodeHint = document.getElementById('branchCodeHint');
+
+        // Handle bank selection change
+        bankSelect.addEventListener('change', function() {
+            const selectedBank = this.value;
+            
+            if (selectedBank === 'Other') {
+                // Show custom bank section
+                customBankSection.style.display = 'block';
+                branchCodeInput.value = '';
+                branchCodeInput.readOnly = false;
+                branchCodeInput.placeholder = 'Enter branch code';
+                branchCodeHint.textContent = 'Please enter your bank\'s branch code';
+                
+                // Update summary with custom bank
+                document.getElementById('summaryBank').textContent = 'Custom Bank';
+                document.getElementById('summaryBranchCode').textContent = 'Custom';
+            } else if (selectedBank && bankBranchCodes[selectedBank]) {
+                // Hide custom bank section
+                customBankSection.style.display = 'none';
+                
+                // Auto-fill branch code
+                branchCodeInput.value = bankBranchCodes[selectedBank];
+                branchCodeInput.readOnly = true;
+                branchCodeInput.placeholder = 'Auto-filled';
+                branchCodeHint.textContent = bankDescriptions[selectedBank];
+                
+                // Update summary
+                document.getElementById('summaryBank').textContent = selectedBank;
+                document.getElementById('summaryBranchCode').textContent = bankBranchCodes[selectedBank];
+            } else {
+                // Hide custom bank section
+                customBankSection.style.display = 'none';
+                branchCodeInput.value = '';
+                branchCodeInput.readOnly = false;
+                branchCodeInput.placeholder = 'Enter branch code';
+                branchCodeHint.textContent = 'Select a bank to auto-fill the branch code';
+                
+                // Update summary
+                document.getElementById('summaryBank').textContent = 'Not specified';
+                document.getElementById('summaryBranchCode').textContent = 'Not specified';
+            }
+            
+            // Clear custom bank fields when not needed
+            if (selectedBank !== 'Other') {
+                document.getElementById('custom_bank_name').value = '';
+                document.getElementById('custom_branch_code').value = '';
+            }
+            
+            updateProgressStep(4);
+        });
+
+        // Allow editing of branch code when needed
+        editBranchCodeBtn.addEventListener('click', function() {
+            if (branchCodeInput.readOnly) {
+                branchCodeInput.readOnly = false;
+                branchCodeInput.placeholder = 'Enter branch code';
+                this.innerHTML = '<i class="fas fa-lock"></i>';
+                branchCodeHint.textContent = 'You can now edit the branch code';
+            } else {
+                const selectedBank = bankSelect.value;
+                if (selectedBank && bankBranchCodes[selectedBank] && selectedBank !== 'Other') {
+                    branchCodeInput.value = bankBranchCodes[selectedBank];
+                    branchCodeInput.readOnly = true;
+                    branchCodeInput.placeholder = 'Auto-filled';
+                    this.innerHTML = '<i class="fas fa-edit"></i>';
+                    branchCodeHint.textContent = bankDescriptions[selectedBank];
+                }
+            }
+        });
+
+        // Handle custom bank name input
+        const customBankNameInput = document.getElementById('custom_bank_name');
+        const customBranchCodeInput = document.getElementById('custom_branch_code');
+        
+        customBankNameInput.addEventListener('input', function() {
+            if (bankSelect.value === 'Other') {
+                document.getElementById('summaryBank').textContent = 
+                    this.value ? this.value : 'Custom Bank';
+            }
+        });
+        
+        customBranchCodeInput.addEventListener('input', function() {
+            if (bankSelect.value === 'Other') {
+                document.getElementById('summaryBranchCode').textContent = 
+                    this.value ? this.value : 'Custom';
+            }
+        });
+
+        // Enhanced File Upload with Validation
+        function setupFileUpload(inputId, labelId, previewId) {
+            const input = document.querySelector(`#${inputId}`);
+            const label = document.querySelector(`#${labelId}`);
+            const preview = document.querySelector(`#${previewId}`);
+            
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file size (5MB max)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size must be less than 5MB');
+                        input.value = '';
+                        return;
+                    }
+                    
+                    // Validate file type
+                    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('Only PDF, JPG, JPEG, and PNG files are allowed');
+                        input.value = '';
+                        return;
+                    }
+                    
+                    // Update label
+                    label.innerHTML = `
+                        <div>
+                            <i class="fas fa-check-circle text-success"></i>
+                            <p class="mb-0">${file.name}<br>
+                            <small>${(file.size / 1024 / 1024).toFixed(2)} MB</small></p>
+                        </div>
+                    `;
+                    
+                    // Show preview
+                    preview.classList.add('show');
+                    preview.innerHTML = `
+                        <div class="file-preview-item">
+                            <div>
+                                <i class="fas fa-file me-2"></i>
+                                <span>${file.name}</span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile('${inputId}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    updateDocumentCount();
+                    updateProgressStep(3);
+                }
+            });
+        }
+        
+        // Initialize file uploads
+        setupFileUpload('death_certificate', 'deathCertLabel', 'deathCertPreview');
+        setupFileUpload('id_copy', 'idCopyLabel', 'idCopyPreview');
+        setupFileUpload('burial_order', 'burialOrderLabel', 'burialOrderPreview');
+        
+        // Remove file function
+        window.removeFile = function(inputId) {
+            const input = document.querySelector(`#${inputId}`);
+            const label = document.querySelector(`#${inputId}Label`);
+            const preview = document.querySelector(`#${inputId}Preview`);
+            
+            input.value = '';
+            label.innerHTML = `
+                <div>
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p class="mb-0">Click to upload<br>
+                    <small>${inputId.replace('_', ' ').toUpperCase()}</small></p>
+                </div>
+            `;
+            preview.classList.remove('show');
+            preview.innerHTML = '';
+            
+            updateDocumentCount();
+        };
+        
+        // Update document count and progress
+        function updateDocumentCount() {
+            const inputs = [
+                document.getElementById('death_certificate'),
+                document.getElementById('id_copy'),
+                document.getElementById('burial_order')
+            ];
+            
+            const uploaded = inputs.filter(input => input.files.length > 0).length;
+            document.getElementById('summaryDocuments').textContent = `${uploaded}/3`;
+            
+            if (uploaded === 3) {
+                updateProgressStep(5);
+            }
+        }
+        
+        // Progress Steps Management
+        function updateProgressStep(stepNumber) {
+            // Reset all steps
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active', 'completed');
+            });
+            
+            // Set completed steps
+            for (let i = 1; i < stepNumber; i++) {
+                const step = document.querySelector(`.step:nth-child(${i})`);
+                if (step) step.classList.add('completed');
+            }
+            
+            // Set active step
+            const activeStep = document.querySelector(`.step:nth-child(${stepNumber})`);
+            if (activeStep) activeStep.classList.add('active');
+        }
+        
+        // Enhanced Form Validation
+        function enableForm() {
+            const submitBtn = document.getElementById('submitButton');
+            const hasSelectedMember = document.getElementById('selectedPolicyId').value && 
+                                    document.getElementById('selectedMemberId').value;
+            const hasCompletedStep1 = document.querySelector('.step:nth-child(1)').classList.contains('completed');
+            
+            submitBtn.disabled = !hasSelectedMember || !hasCompletedStep1;
+        }
+        
+        // Real-time summary updates
+        const formInputs = document.querySelectorAll('#claimForm input, #claimForm select, #claimForm textarea');
+        formInputs.forEach(input => {
+            input.addEventListener('input', updateSummary);
+            input.addEventListener('change', updateSummary);
+        });
+        
+        function updateSummary() {
+            // Update member info
+            const selectedMember = document.getElementById('selectedMemberDisplay').textContent;
+            document.getElementById('summaryMember').textContent = selectedMember !== 'No member selected' ? selectedMember : 'Not selected';
+            
+            const relationship = document.getElementById('selectedRelationship').value;
+            document.getElementById('summaryRelationship').textContent = relationship || 'Not specified';
+            
+            // Update dates
+            const deathDate = document.getElementById('date_of_death');
+            if (deathDate.value) {
+                document.getElementById('summaryDeathDate').textContent = 
+                    new Date(deathDate.value).toLocaleDateString('en-ZA');
+            }
+            
+            const burialDate = document.getElementById('date_of_burial');
+            if (burialDate.value) {
+                document.getElementById('summaryBurialDate').textContent = 
+                    new Date(burialDate.value).toLocaleDateString('en-ZA');
+            }
+            
+            // Update bank details
+            const accountHolder = document.getElementById('account_holder');
+            if (accountHolder.value) {
+                document.getElementById('summaryAccountHolder').textContent = accountHolder.value;
+            }
+            
+            // Update branch code in summary
+            const branchCode = document.getElementById('branch_code');
+            if (branchCode.value) {
+                document.getElementById('summaryBranchCode').textContent = branchCode.value;
+            }
+        }
+        
+        // Enhanced Date Validation
+        function initializeDateValidation() {
+            const deathDateInput = document.getElementById('date_of_death');
+            const burialDateInput = document.getElementById('date_of_burial');
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Set Date of Death: can be any date up to today
+            deathDateInput.max = today;
+            
+            // Remove any existing min restriction for death date
+            deathDateInput.removeAttribute('min');
+            
+            // Set initial Date of Death to today (optional, remove if you don't want default)
+            if (!deathDateInput.value) {
+                deathDateInput.value = today;
+            }
+            
+            // Set Date of Burial: can be any date after Date of Death
+            if (!burialDateInput.value) {
+                // Default to today or tomorrow based on death date
+                const deathDate = new Date(deathDateInput.value);
+                const nextDay = new Date(deathDate);
+                nextDay.setDate(nextDay.getDate() + 1);
+                burialDateInput.value = nextDay.toISOString().split('T')[0];
+            }
+            
+            // Update burial date min when death date changes
+            deathDateInput.addEventListener('change', function() {
+                const selectedDeathDate = new Date(this.value);
+                const nextDay = new Date(selectedDeathDate);
+                nextDay.setDate(nextDay.getDate() + 1);
+                
+                burialDateInput.min = nextDay.toISOString().split('T')[0];
+                
+                // If current burial date is before the new min, update it
+                const currentBurialDate = new Date(burialDateInput.value);
+                if (currentBurialDate <= selectedDeathDate) {
+                    burialDateInput.value = nextDay.toISOString().split('T')[0];
+                }
+            });
+            
+            // Initialize burial date min based on initial death date
+            if (deathDateInput.value) {
+                const selectedDeathDate = new Date(deathDateInput.value);
+                const nextDay = new Date(selectedDeathDate);
+                nextDay.setDate(nextDay.getDate() + 1);
+                burialDateInput.min = nextDay.toISOString().split('T')[0];
+            }
+        }
+        
+        // Enhanced Form Submission
+        document.getElementById('claimForm').addEventListener('submit', function(e) {
+            // Validate member selection
+            if (!document.getElementById('selectedPolicyId').value || !document.getElementById('selectedMemberId').value) {
+                e.preventDefault();
+                alert('Please select a policy and member to proceed.');
+                return;
+            }
+            
+            // Validate dates
+            const deathDate = new Date(document.getElementById('date_of_death').value);
+            const burialDate = new Date(document.getElementById('date_of_burial').value);
+            const today = new Date();
+            
+            // Date of Death cannot be in the future
+            if (deathDate > today) {
+                e.preventDefault();
+                alert('Date of Death cannot be in the future.');
+                return;
+            }
+            
+            // Burial date must be after death date
+            if (burialDate <= deathDate) {
+                e.preventDefault();
+                alert('Date of Burial must be after the Date of Death.');
+                return;
+            }
+            
+            // Validate bank details
+            const bankName = document.getElementById('bank_name').value;
+            if (!bankName) {
+                e.preventDefault();
+                alert('Please select a bank.');
+                return;
+            }
+            
+            // Handle custom bank validation
+            if (bankName === 'Other') {
+                const customBankName = document.getElementById('custom_bank_name').value.trim();
+                const customBranchCode = document.getElementById('custom_branch_code').value.trim();
+                
+                if (!customBankName || !customBranchCode) {
+                    e.preventDefault();
+                    alert('Please provide both custom bank name and branch code.');
+                    return;
+                }
+                
+                // Set the custom values to the main form fields
+                const hiddenBankInput = document.createElement('input');
+                hiddenBankInput.type = 'hidden';
+                hiddenBankInput.name = 'bank_name';
+                hiddenBankInput.value = customBankName;
+                this.appendChild(hiddenBankInput);
+                
+                // Override the branch code
+                document.getElementById('branch_code').value = customBranchCode;
+            }
+            
+            // Validate branch code
+            const branchCode = document.getElementById('branch_code').value.trim();
+            if (!branchCode) {
+                e.preventDefault();
+                alert('Please provide a branch code.');
+                return;
+            }
+            
+            // Validate account holder and account number
+            const accountHolder = document.getElementById('account_holder').value.trim();
+            const accountNumber = document.getElementById('account_number').value.trim();
+            
+            if (!accountHolder || !accountNumber) {
+                e.preventDefault();
+                alert('Please complete all bank details.');
+                return;
+            }
+            
+            // Validate documents
+            const requiredDocs = [
+                document.getElementById('death_certificate'),
+                document.getElementById('id_copy'),
+                document.getElementById('burial_order')
+            ];
+            
+            const uploadedDocs = requiredDocs.filter(input => input.files.length > 0).length;
+            if (uploadedDocs < 3) {
+                e.preventDefault();
+                alert('Please upload all required documents (Death Certificate, ID Copy, and Burial Order).');
+                return;
+            }
+            
+            // Validate terms agreement
+            if (!document.getElementById('termsAgreement').checked) {
+                e.preventDefault();
+                alert('Please agree to the terms and conditions.');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = document.getElementById('submitButton');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Submitting Claim...';
+            submitBtn.disabled = true;
+            
+            // Prevent double submission
+            setTimeout(() => {
+                submitBtn.disabled = true;
+            }, 100);
+        });
+        
+        // Initialize
+        updateProgressStep(1);
+        enableForm();
+        initializeDateValidation();  // Initialize date validation
+        updateSummary();
+    });
+</script>
+{% endblock %}

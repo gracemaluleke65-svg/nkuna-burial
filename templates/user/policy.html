@@ -1,0 +1,925 @@
+{% extends "base.html" %}
+
+{% block title %}My Policies - Nkuna Burial Society{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Policy Dashboard Specific Styles */
+    .policy-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid transparent;
+        transition: var(--transition);
+    }
+    
+    .policy-header:hover {
+        border-color: var(--primary-teal);
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(14, 165, 233, 0.2);
+    }
+    
+    .policy-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+    }
+    
+    .policy-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        background: linear-gradient(45deg, white, #bae6fd);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Policy Cards */
+    .policy-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        transition: var(--transition);
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .policy-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+        opacity: 0;
+        transition: var(--transition);
+        z-index: 0;
+    }
+    
+    .policy-card:hover::after {
+        opacity: 1;
+    }
+    
+    .policy-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary-teal);
+    }
+    
+    .policy-status {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem 1.2rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: var(--transition);
+    }
+    
+    .status-active {
+        background: linear-gradient(135deg, #10b981, #34d399);
+        color: white;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-overdue {
+        background: linear-gradient(135deg, #ef4444, #f87171);
+        color: white;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .policy-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, var(--primary-teal), #38bdf8);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+        margin-bottom: 1.5rem;
+        transition: var(--transition);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .policy-card:hover .policy-icon {
+        transform: rotateY(180deg) scale(1.1);
+        background: linear-gradient(135deg, var(--accent-gold), #fbbf24);
+    }
+    
+    /* Member Status Indicators */
+    .member-status-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-right: 0.5rem;
+    }
+    
+    .status-active-member {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-inactive-member {
+        background: linear-gradient(135deg, rgba(108, 117, 125, 0.15), rgba(108, 117, 125, 0.05));
+        color: #6c757d;
+        border: 1px solid rgba(108, 117, 125, 0.3);
+    }
+    
+    .status-claim-processed {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    /* Premium Progress Bar */
+    .premium-progress {
+        height: 10px;
+        background: #e2e8f0;
+        border-radius: 5px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .premium-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-teal), #38bdf8);
+        border-radius: 5px;
+        transition: width 1s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .premium-progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    /* Member List */
+    .member-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: var(--transition);
+        border: 1px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .member-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--primary-teal);
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 0.3s ease;
+    }
+    
+    .member-card:hover::before {
+        transform: scaleY(1);
+    }
+    
+    .member-card:hover {
+        transform: translateX(8px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-teal);
+    }
+    
+    .member-avatar {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-teal), #38bdf8);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 1.2rem;
+        transition: var(--transition);
+    }
+    
+    .member-card:hover .member-avatar {
+        transform: scale(1.1) rotate(5deg);
+        background: linear-gradient(135deg, var(--accent-gold), #fbbf24);
+    }
+    
+    /* Action Buttons */
+    .action-button {
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .action-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: 0.5s;
+    }
+    
+    .action-button:hover::before {
+        left: 100%;
+    }
+    
+    .action-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3);
+        background: linear-gradient(135deg, #0284c7, var(--primary-teal));
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--card-bg);
+        border-radius: 20px;
+        border: 2px dashed #cbd5e1;
+        transition: var(--transition);
+    }
+    
+    .empty-state:hover {
+        border-color: var(--primary-teal);
+        border-style: solid;
+        transform: translateY(-5px);
+    }
+    
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(251, 191, 36, 0.1));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        font-size: 3rem;
+        color: var(--primary-teal);
+        transition: var(--transition);
+    }
+    
+    .empty-state:hover .empty-icon {
+        transform: rotate(20deg) scale(1.1);
+        color: var(--accent-gold);
+    }
+    
+    /* Quick Stats */
+    .quick-stat {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: var(--transition);
+        border: 2px solid transparent;
+    }
+    
+    .quick-stat:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-teal);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(45deg, var(--primary-teal), var(--accent-gold));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Member Summary */
+    .member-summary {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(251, 191, 36, 0.02));
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(14, 165, 233, 0.1);
+    }
+    
+    .member-summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.25rem 0;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .policy-header {
+            padding: 1.5rem;
+        }
+        
+        .policy-number {
+            font-size: 1.4rem;
+        }
+        
+        .policy-card {
+            padding: 1.5rem;
+        }
+        
+        .policy-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="policy-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">My Policies</h1>
+                <p class="lead mb-0">Manage your burial policies and track member status</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex flex-column gap-2">
+                    <a href="{{ url_for('main.create_policy') }}" class="action-button">
+                        <i class="fas fa-plus-circle me-2"></i> Create New Policy
+                    </a>
+                    <a href="{{ url_for('main.deposit') }}" class="btn btn-outline-light">
+                        <i class="fas fa-money-bill-wave me-2"></i> Deposit Funds
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-3 mb-5">
+        <div class="col-md-3 col-6">
+            <div class="quick-stat">
+                <div class="stat-value">{{ total_policies }}</div>
+                <p class="text-muted mb-0">Total Policies</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="quick-stat">
+                <div class="stat-value">R{{ "%.2f"|format(total_premium) }}</div>
+                <p class="text-muted mb-0">Monthly Premium</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="quick-stat">
+                <div class="stat-value">{{ overdue_count }}</div>
+                <p class="text-muted mb-0">Overdue</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="quick-stat">
+                <div class="stat-value">R{{ "%.2f"|format(current_user.virtual_balance) }}</div>
+                <p class="text-muted mb-0">Available Balance</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policies Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">Your Policies</h2>
+                {% if policies %}
+                <span class="badge bg-primary rounded-pill px-3 py-2">
+                    {{ policies|length }} Active Policy{% if policies|length != 1 %}ies{% endif %}
+                </span>
+                {% endif %}
+            </div>
+
+            {% if not policies %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-file-contract"></i>
+                </div>
+                <h3 class="fw-bold mb-3">No Policies Yet</h3>
+                <p class="text-muted mb-4">Create your first burial policy to get started with digital management.</p>
+                <a href="{{ url_for('main.create_policy') }}" class="action-button">
+                    <i class="fas fa-plus-circle me-2"></i> Create Your First Policy
+                </a>
+            </div>
+            {% else %}
+            <!-- Policies Grid -->
+            <div class="row">
+                {% for policy in policies %}
+                <div class="col-lg-6 mb-4">
+                    <div class="policy-card" data-policy-id="{{ policy.id }}">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <span class="policy-status {% if policy.is_overdue() %}status-overdue{% else %}status-active{% endif %}">
+                                    {% if policy.is_overdue() %}OVERDUE{% else %}{{ policy.status|upper }}{% endif %}
+                                </span>
+                                <div class="policy-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <h4 class="fw-bold mb-1">{{ policy.policy_name }}</h4>
+                                <p class="text-muted mb-2">{{ policy.policy_number }}</p>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-success fs-4">R{{ "%.2f"|format(policy.coverage_amount) }}</div>
+                                <small class="text-muted">Coverage Amount</small>
+                            </div>
+                        </div>
+
+                        <!-- Member Status Summary -->
+                        <div class="member-summary mb-3">
+                            <div class="member-summary-row">
+                                <span class="text-muted">Active Members:</span>
+                                <span class="fw-bold text-success">
+                                    {{ policy.covered_members|selectattr('is_active', 'equalto', True)|selectattr('has_claim', 'equalto', False)|list|length + 1 }}
+                                </span>
+                            </div>
+                            <div class="member-summary-row">
+                                <span class="text-muted">Inactive Members:</span>
+                                <span class="fw-bold text-secondary">
+                                    {{ policy.covered_members|selectattr('is_active', 'equalto', False)|list|length }}
+                                </span>
+                            </div>
+                            <div class="member-summary-row">
+                                <span class="text-muted">Claims Processed:</span>
+                                <span class="fw-bold text-warning">
+                                    {{ policy.covered_members|selectattr('has_claim', 'equalto', True)|list|length }}
+                                </span>
+                            </div>
+                            <div class="member-summary-row">
+                                <span class="text-muted">Total Members:</span>
+                                <span class="fw-bold">{{ policy.get_total_members() }}/15</span>
+                            </div>
+                        </div>
+
+                        <!-- Policy Details -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Start Date</small>
+                                        <strong>{{ policy.start_date.strftime('%d %b %Y') }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-calendar-check text-warning me-2"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Next Payment</small>
+                                        <strong class="{% if policy.is_overdue() %}text-danger{% endif %}">
+                                            {{ policy.next_payment_date.strftime('%d %b %Y') }}
+                                        </strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Premium Progress -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <small class="text-muted">Monthly Premium</small>
+                                <small class="fw-bold">R{{ "%.2f"|format(policy.calculate_total_premium()) }}</small>
+                            </div>
+                            <div class="premium-progress">
+                                {% set premium_percentage = (policy.calculate_total_premium() / 1000 * 100)|int %}
+                                {% if premium_percentage > 100 %}{% set premium_percentage = 100 %}{% endif %}
+                                <div class="premium-progress-bar" style="width: {{ premium_percentage }}%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Policy Actions -->
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('main.view_policy', policy_id=policy.id) }}" 
+                               class="btn btn-outline-primary flex-fill">
+                                <i class="fas fa-eye me-1"></i> View Details
+                            </a>
+                            <a href="{{ url_for('main.pay_premium', policy_id=policy.id) }}" 
+                               class="btn btn-success flex-fill">
+                                <i class="fas fa-credit-card me-1"></i> Pay Premium
+                            </a>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" 
+                                        data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('main.add_member', policy_id=policy.id) }}">
+                                            <i class="fas fa-user-plus me-2"></i> Add Member
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" 
+                                           data-bs-target="#editPolicy{{ policy.id }}">
+                                            <i class="fas fa-edit me-2"></i> Edit Policy
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" 
+                                           data-bs-target="#deletePolicy{{ policy.id }}">
+                                            <i class="fas fa-trash me-2"></i> Delete Policy
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Policy Modal -->
+                    <div class="modal fade modal-modern" id="editPolicy{{ policy.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Edit Policy</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="#" method="POST">
+                                        <div class="mb-3">
+                                            <label class="form-label">Policy Name</label>
+                                            <input type="text" class="form-control" value="{{ policy.policy_name }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Coverage Amount (R)</label>
+                                            <input type="number" class="form-control" value="{{ policy.coverage_amount }}">
+                                        </div>
+                                        <div class="d-grid">
+                                            <button type="submit" class="action-button">Update Policy</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delete Policy Modal -->
+                    <div class="modal fade modal-modern" id="deletePolicy{{ policy.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Confirm Deletion</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="text-center mb-4">
+                                        <i class="fas fa-exclamation-triangle text-warning display-1"></i>
+                                        <h4 class="mt-3">Delete Policy?</h4>
+                                        <p class="text-muted">This will permanently delete "{{ policy.policy_name }}" and all covered members.</p>
+                                        <div class="alert alert-warning">
+                                            <strong>Warning:</strong> This includes {{ policy.covered_members|length }} covered members and any associated claims.
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-outline-secondary flex-fill" data-bs-dismiss="modal">Cancel</button>
+                                        <button class="btn btn-danger flex-fill">Delete Policy</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    {% if recent_transactions %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="fw-bold mb-4">Recent Transactions</h2>
+            <div class="card-modern">
+                <div class="table-responsive">
+                    <table class="table table-modern table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Transaction ID</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions %}
+                            <tr>
+                                <td>{{ transaction.created_at.strftime('%d %b %Y') }}</td>
+                                <td>
+                                    <code class="text-primary">{{ transaction.transaction_id }}</code>
+                                </td>
+                                <td>
+                                    <span class="badge {% if transaction.transaction_type == 'deposit' %}bg-success{% elif transaction.transaction_type == 'premium_payment' %}bg-warning{% else %}bg-info{% endif %}">
+                                        {{ transaction.transaction_type|replace('_', ' ')|title }}
+                                    </span>
+                                </td>
+                                <td class="fw-bold {% if transaction.net_amount > 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {% if transaction.net_amount > 0 %}+{% endif %}R{{ "%.2f"|format(transaction.net_amount) }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">Completed</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('main.transactions') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-history me-2"></i> View All Transactions
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="fw-bold mb-4">Quick Actions</h2>
+            <div class="row g-3">
+                <div class="col-md-3 col-6">
+                    <a href="{{ url_for('main.deposit') }}" class="card-modern text-center p-4 text-decoration-none">
+                        <div class="mb-3">
+                            <div class="policy-icon mx-auto">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                        </div>
+                        <h5 class="fw-bold mb-2">Deposit Funds</h5>
+                        <p class="text-muted small">Add money to your virtual balance</p>
+                    </a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <a href="{{ url_for('main.create_policy') }}" class="card-modern text-center p-4 text-decoration-none">
+                        <div class="mb-3">
+                            <div class="policy-icon mx-auto">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                        </div>
+                        <h5 class="fw-bold mb-2">New Policy</h5>
+                        <p class="text-muted small">Create a new burial policy</p>
+                    </a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <a href="{{ url_for('main.claims') }}" class="card-modern text-center p-4 text-decoration-none">
+                        <div class="mb-3">
+                            <div class="policy-icon mx-auto">
+                                <i class="fas fa-hand-holding-heart"></i>
+                            </div>
+                        </div>
+                        <h5 class="fw-bold mb-2">Submit Claim</h5>
+                        <p class="text-muted small">File a funeral claim</p>
+                    </a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <a href="{{ url_for('auth.profile') }}" class="card-modern text-center p-4 text-decoration-none">
+                        <div class="mb-3">
+                            <div class="policy-icon mx-auto">
+                                <i class="fas fa-user-cog"></i>
+                            </div>
+                        </div>
+                        <h5 class="fw-bold mb-2">Profile Settings</h5>
+                        <p class="text-muted small">Update your account details</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced JavaScript for Interactive Elements -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Policy card hover effects with member status
+    document.querySelectorAll('.policy-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.02)';
+            this.style.boxShadow = '0 20px 40px rgba(14, 165, 233, 0.15)';
+            
+            // Highlight member status changes
+            const memberSummaries = this.querySelectorAll('.member-summary-row');
+            memberSummaries.forEach(summary => {
+                summary.style.background = 'rgba(14, 165, 233, 0.05)';
+                summary.style.borderRadius = '8px';
+                summary.style.padding = '0.5rem';
+                summary.style.margin = '0.25rem 0';
+            });
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+            this.style.boxShadow = '';
+            
+            // Reset member summaries
+            const memberSummaries = this.querySelectorAll('.member-summary-row');
+            memberSummaries.forEach(summary => {
+                summary.style.background = '';
+                summary.style.borderRadius = '';
+                summary.style.padding = '';
+                summary.style.margin = '';
+            });
+        });
+    });
+    
+    // Quick stat hover effects
+    document.querySelectorAll('.quick-stat').forEach(stat => {
+        stat.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.borderColor = 'rgb(14, 165, 233)';
+        });
+        
+        stat.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.borderColor = 'transparent';
+        });
+    });
+    
+    // Animate progress bars on scroll
+    const observerOptions = {
+        threshold: 0.5
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const progressBar = entry.target.querySelector('.premium-progress-bar');
+                if (progressBar) {
+                    setTimeout(() => {
+                        progressBar.style.width = progressBar.style.width;
+                    }, 300);
+                }
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.policy-card').forEach(card => {
+        observer.observe(card);
+    });
+    
+    // Update overdue counters
+    const overdueElements = document.querySelectorAll('.status-overdue');
+    if (overdueElements.length > 0) {
+        // Show notification badge
+        const navBadge = document.createElement('span');
+        navBadge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+        navBadge.textContent = overdueElements.length;
+        navBadge.style.fontSize = '0.6rem';
+        
+        const policiesNav = document.querySelector('a[href*="policies"]');
+        if (policiesNav) {
+            policiesNav.style.position = 'relative';
+            policiesNav.appendChild(navBadge);
+        }
+        
+        // Show overdue notification
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-warning alert-dismissible fade show mt-3';
+        notification.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Payment Alert:</strong> You have ${overdueElements.length} overdue policy payment${overdueElements.length > 1 ? 's' : ''}.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const header = document.querySelector('.policy-header');
+        if (header) {
+            header.parentNode.insertBefore(notification, header.nextSibling);
+        }
+    }
+    
+    // Auto-refresh policy status every 30 seconds
+    setInterval(() => {
+        // This would typically make an API call to refresh policy status
+        console.log('Auto-refreshing policy status...');
+        
+        // Check for member status changes
+        fetch('{{ url_for("main.policies") }}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Check if member counts have changed
+            const newActiveMembers = $(html).find('.status-active-member').length;
+            const currentActiveMembers = $('.status-active-member').length;
+            
+            if (newActiveMembers !== currentActiveMembers) {
+                // Member status changed, reload page
+                location.reload();
+            }
+        })
+        .catch(error => console.log('Auto-refresh failed:', error));
+    }, 30000);
+    
+    // Enhanced member status tracking
+    function updateMemberStatus(policyId, memberId, status) {
+        // This would make an API call to update member status
+        fetch(`/api/policy/${policyId}/member/${memberId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': '{{ csrf_token() if csrf_token else "" }}'
+            },
+            body: JSON.stringify({ status: status })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update UI
+                location.reload();
+            } else {
+                alert('Error updating member status: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    
+    // Add click handlers for member status updates
+    document.querySelectorAll('.member-status-indicator').forEach(indicator => {
+        indicator.addEventListener('click', function() {
+            const policyId = this.closest('.policy-card').dataset.policyId;
+            const memberId = this.dataset.memberId;
+            const currentStatus = this.dataset.status;
+            
+            if (confirm('Are you sure you want to update this member status?')) {
+                const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+                updateMemberStatus(policyId, memberId, newStatus);
+            }
+        });
+    });
+    
+    // Animate member summaries on hover
+    document.querySelectorAll('.member-summary').forEach(summary => {
+        summary.addEventListener('mouseenter', function() {
+            this.style.background = 'linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(251, 191, 36, 0.04))';
+            this.style.borderColor = 'rgba(14, 165, 233, 0.2)';
+        });
+        
+        summary.addEventListener('mouseleave', function() {
+            this.style.background = 'linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(251, 191, 36, 0.02))';
+            this.style.borderColor = 'rgba(14, 165, 233, 0.1)';
+        });
+    });
+});
+</script>
+{% endblock %}

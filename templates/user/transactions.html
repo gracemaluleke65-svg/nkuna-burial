@@ -1,0 +1,932 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, #1e3a8a 100%);
+        color: white;
+        padding: 3rem 0;
+        border-radius: 0 0 24px 24px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%230ea5e9' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        animation: float 20s linear infinite;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(45deg, white, #bae6fd);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    /* Stats Cards */
+    .stats-grid {
+        margin-top: -50px;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .stat-card-modern {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+        transition: var(--transition);
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+        transform: translateY(-100%);
+        transition: transform 0.5s ease;
+    }
+    
+    .stat-card-modern:hover::before {
+        transform: translateY(0);
+    }
+    
+    .stat-card-modern:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-teal);
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-teal), #38bdf8);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+        color: white;
+        transition: var(--transition);
+    }
+    
+    .stat-card-modern:hover .stat-icon {
+        transform: rotateY(180deg);
+        background: linear-gradient(135deg, var(--accent-gold), #fbbf24);
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(45deg, var(--primary-teal), var(--accent-gold));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    /* Filters Section */
+    .filters-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        margin-bottom: 2rem;
+        transition: var(--transition);
+    }
+    
+    .filters-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+    
+    .filter-badge {
+        background: rgba(14, 165, 233, 0.1);
+        border: 1px solid var(--primary-teal);
+        color: var(--primary-teal);
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .filter-badge:hover {
+        background: var(--primary-teal);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(14, 165, 233, 0.3);
+    }
+    
+    .filter-badge.active {
+        background: var(--primary-teal);
+        color: white;
+    }
+    
+    /* Transactions Table */
+    .transactions-table-container {
+        background: var(--card-bg);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+    }
+    
+    .transactions-table-container:hover {
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .transactions-table {
+        margin: 0;
+    }
+    
+    .transactions-table thead th {
+        background: linear-gradient(135deg, var(--primary-dark), #1e3a8a);
+        color: white;
+        font-weight: 600;
+        padding: 1.25rem 1.5rem;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .transactions-table thead th::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+    }
+    
+    .transactions-table tbody tr {
+        transition: var(--transition);
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .transactions-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    
+    .transactions-table tbody tr:hover {
+        background: linear-gradient(90deg, rgba(14, 165, 233, 0.05), rgba(251, 191, 36, 0.05));
+        transform: scale(1.005);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .transactions-table tbody td {
+        padding: 1.25rem 1.5rem;
+        vertical-align: middle;
+        border: none;
+        position: relative;
+    }
+    
+    /* Transaction Type Badges */
+    .txn-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-block;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .txn-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: 0.5s;
+    }
+    
+    .txn-badge:hover::before {
+        left: 100%;
+    }
+    
+    .txn-badge.deposit {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .txn-badge.deposit:hover {
+        background: linear-gradient(135deg, #10b981, #0da271);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+    }
+    
+    .txn-badge.withdrawal {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .txn-badge.withdrawal:hover {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+    }
+    
+    .txn-badge.premium_payment {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.05));
+        color: var(--primary-teal);
+        border: 1px solid rgba(14, 165, 233, 0.3);
+    }
+    
+    .txn-badge.premium_payment:hover {
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(14, 165, 233, 0.3);
+    }
+    
+    .txn-badge.claim_payout {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+        color: #8b5cf6;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+    
+    .txn-badge.claim_payout:hover {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+    }
+    
+    .txn-badge.fee {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    .txn-badge.fee:hover {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+    }
+    
+    /* Amount Styling */
+    .amount-positive {
+        color: #10b981;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    
+    .amount-positive:hover {
+        transform: scale(1.1);
+        text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+    }
+    
+    .amount-negative {
+        color: #ef4444;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    
+    .amount-negative:hover {
+        transform: scale(1.1);
+        text-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Status Badges */
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    
+    .status-badge.completed {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-badge.completed:hover {
+        background: #10b981;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-badge.pending {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    .status-badge.pending:hover {
+        background: #f59e0b;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+    }
+    
+    .status-badge.failed {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .status-badge.failed:hover {
+        background: #ef4444;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--primary-teal);
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+        transition: var(--transition);
+    }
+    
+    .empty-state:hover .empty-icon {
+        opacity: 1;
+        transform: scale(1.1) rotate(10deg);
+    }
+    
+    /* Pagination */
+    .pagination-modern {
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    
+    .page-item .page-link {
+        border: none;
+        border-radius: 10px;
+        margin: 0 0.25rem;
+        color: var(--text-dark);
+        font-weight: 600;
+        transition: var(--transition);
+        background: var(--light-bg);
+    }
+    
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        color: white;
+        box-shadow: 0 5px 15px rgba(14, 165, 233, 0.3);
+    }
+    
+    .page-item:not(.active) .page-link:hover {
+        background: var(--primary-teal);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(14, 165, 233, 0.2);
+    }
+    
+    /* Export Button */
+    .export-btn {
+        background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .export-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(251, 191, 36, 0.3);
+        background: linear-gradient(135deg, #f59e0b, var(--accent-gold));
+    }
+    
+    /* Transaction Details Modal */
+    .txn-detail-row {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f5f9;
+        transition: var(--transition);
+    }
+    
+    .txn-detail-row:hover {
+        background: rgba(14, 165, 233, 0.05);
+        border-radius: 8px;
+        padding-left: 1rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .transactions-table {
+            display: block;
+            overflow-x: auto;
+        }
+        
+        .stat-card-modern {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container position-relative">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="page-title">Transaction History</h1>
+                <p class="lead mb-0 opacity-90">Track all your financial activities, deposits, payments, and fees in one place</p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                <a href="{{ url_for('main.deposit') }}" class="btn btn-modern">
+                    <i class="fas fa-plus-circle me-2"></i> Make Deposit
+                </a>
+                <button class="export-btn ms-2" onclick="exportTransactions()">
+                    <i class="fas fa-download me-2"></i> Export CSV
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Overview -->
+<section class="py-4">
+    <div class="container">
+        <div class="row stats-grid g-4">
+            <div class="col-md-3 col-6">
+                <div class="stat-card-modern">
+                    <div class="stat-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="stat-value">R{{ "%.2f"|format(current_user.virtual_balance) }}</div>
+                    <p class="text-muted mb-0">Current Balance</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card-modern">
+                    <div class="stat-icon">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div class="stat-value">
+                        {% set total_deposits = transactions.items|selectattr('transaction_type', 'equalto', 'deposit')|map(attribute='amount')|sum %}
+                        R{{ "%.2f"|format(total_deposits) }}
+                    </div>
+                    <p class="text-muted mb-0">Total Deposits</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card-modern">
+                    <div class="stat-icon">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <div class="stat-value">
+                        {% set total_payments = transactions.items|selectattr('transaction_type', 'equalto', 'premium_payment')|map(attribute='amount')|sum %}
+                        R{{ "%.2f"|format(total_payments) }}
+                    </div>
+                    <p class="text-muted mb-0">Premium Payments</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card-modern">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="stat-value">
+                        {% set total_fees = transactions.items|map(attribute='service_fee')|sum %}
+                        R{{ "%.2f"|format(total_fees) }}
+                    </div>
+                    <p class="text-muted mb-0">Total Fees Paid</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filters Section -->
+<section class="py-3">
+    <div class="container">
+        <div class="filters-card">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="fw-bold mb-3">Filter Transactions</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="filter-badge active" onclick="filterTransactions('all')">
+                            <i class="fas fa-layer-group me-1"></i> All
+                        </span>
+                        <span class="filter-badge" onclick="filterTransactions('deposit')">
+                            <i class="fas fa-arrow-down me-1"></i> Deposits
+                        </span>
+                        <span class="filter-badge" onclick="filterTransactions('premium_payment')">
+                            <i class="fas fa-file-invoice-dollar me-1"></i> Premiums
+                        </span>
+                        <span class="filter-badge" onclick="filterTransactions('claim_payout')">
+                            <i class="fas fa-hand-holding-usd me-1"></i> Payouts
+                        </span>
+                        <span class="filter-badge" onclick="filterTransactions('fee')">
+                            <i class="fas fa-percentage me-1"></i> Fees
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" id="searchTransactions" class="form-control border-0 bg-light" 
+                               placeholder="Search by ID or reference..." onkeyup="searchTransactions()">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Transactions Table -->
+<section class="py-3">
+    <div class="container">
+        <div class="transactions-table-container">
+            {% if transactions.items %}
+            <div class="table-responsive">
+                <table class="table transactions-table">
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Date & Time</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Service Fee</th>
+                            <th>Net Amount</th>
+                            <th>Status</th>
+                            <th>Reference</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions.items %}
+                        <tr class="transaction-row" data-type="{{ transaction.transaction_type }}">
+                            <td>
+                                <div class="fw-bold">{{ transaction.transaction_id }}</div>
+                                <small class="text-muted">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </td>
+                            <td>
+                                <div>{{ transaction.created_at.strftime('%d %b %Y') }}</div>
+                                <small class="text-muted">{{ transaction.created_at.strftime('%I:%M %p') }}</small>
+                            </td>
+                            <td>
+                                {% if transaction.transaction_type == 'deposit' %}
+                                <span class="txn-badge deposit">
+                                    <i class="fas fa-arrow-down me-1"></i> Deposit
+                                </span>
+                                {% elif transaction.transaction_type == 'premium_payment' %}
+                                <span class="txn-badge premium_payment">
+                                    <i class="fas fa-file-invoice-dollar me-1"></i> Premium
+                                </span>
+                                {% elif transaction.transaction_type == 'claim_payout' %}
+                                <span class="txn-badge claim_payout">
+                                    <i class="fas fa-hand-holding-usd me-1"></i> Payout
+                                </span>
+                                {% elif transaction.transaction_type == 'registration_fee' %}
+                                <span class="txn-badge fee">
+                                    <i class="fas fa-user-plus me-1"></i> Registration
+                                </span>
+                                {% elif transaction.transaction_type == 'service_fee' %}
+                                <span class="txn-badge fee">
+                                    <i class="fas fa-percentage me-1"></i> Service Fee
+                                </span>
+                                {% else %}
+                                <span class="txn-badge fee">
+                                    <i class="fas fa-exchange-alt me-1"></i> {{ transaction.transaction_type|replace('_', ' ')|title }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if transaction.amount >= 0 %}
+                                <span class="amount-positive">R{{ "%.2f"|format(transaction.amount) }}</span>
+                                {% else %}
+                                <span class="amount-negative">-R{{ "%.2f"|format(-transaction.amount) }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if transaction.service_fee > 0 %}
+                                <span class="text-warning fw-bold">R{{ "%.2f"|format(transaction.service_fee) }}</span>
+                                {% else %}
+                                <span class="text-muted">R0.00</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if transaction.net_amount >= 0 %}
+                                <span class="amount-positive">R{{ "%.2f"|format(transaction.net_amount) }}</span>
+                                {% else %}
+                                <span class="amount-negative">-R{{ "%.2f"|format(-transaction.net_amount) }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="status-badge completed">
+                                    <i class="fas fa-check-circle me-1"></i> Completed
+                                </span>
+                            </td>
+                            <td>
+                                <div class="text-truncate" style="max-width: 150px;" 
+                                     title="{{ transaction.reference }}">
+                                    {{ transaction.reference }}
+                                </div>
+                                {% if transaction.policy_id %}
+                                <small class="text-muted">Policy: {{ transaction.policy.policy_number if transaction.policy else 'N/A' }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        onclick="viewTransactionDetails('{{ transaction.id }}')"
+                                        data-bs-toggle="tooltip" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-success ms-1" 
+                                        onclick="downloadReceipt('{{ transaction.id }}')"
+                                        data-bs-toggle="tooltip" title="Download Receipt">
+                                    <i class="fas fa-receipt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <h4 class="fw-bold mb-3">No Transactions Yet</h4>
+                <p class="text-muted mb-4">You haven't made any transactions yet. Get started by making your first deposit!</p>
+                <a href="{{ url_for('main.deposit') }}" class="btn btn-modern">
+                    <i class="fas fa-plus-circle me-2"></i> Make Your First Deposit
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if transactions.pages > 1 %}
+        <nav aria-label="Transaction pagination" class="pagination-modern">
+            <ul class="pagination">
+                {% if transactions.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.transactions', page=transactions.prev_num) }}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in transactions.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == transactions.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('main.transactions', page=page_num) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if transactions.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.transactions', page=transactions.next_num) }}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Transaction Details Modal -->
+<div class="modal fade" id="transactionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-dark), #1e3a8a);">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-receipt me-2"></i> Transaction Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="transactionDetails">
+                    <!-- Details will be loaded here via JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-modern" onclick="downloadReceipt()">
+                    <i class="fas fa-print me-2"></i> Print Receipt
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+    
+    // Filter transactions by type
+    function filterTransactions(type) {
+        const rows = document.querySelectorAll('.transaction-row');
+        const badges = document.querySelectorAll('.filter-badge');
+        
+        // Update active filter badge
+        badges.forEach(badge => {
+            badge.classList.remove('active');
+            if (badge.textContent.includes(type.charAt(0).toUpperCase() + type.slice(1)) || 
+                (type === 'all' && badge.textContent.includes('All'))) {
+                badge.classList.add('active');
+            }
+        });
+        
+        // Show/hide rows based on type
+        rows.forEach(row => {
+            if (type === 'all' || row.getAttribute('data-type') === type) {
+                row.style.display = '';
+                setTimeout(() => {
+                    row.style.opacity = '1';
+                    row.style.transform = 'scale(1)';
+                }, 50);
+            } else {
+                row.style.opacity = '0';
+                row.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    row.style.display = 'none';
+                }, 300);
+            }
+        });
+    }
+    
+    // Search transactions
+    function searchTransactions() {
+        const searchTerm = document.getElementById('searchTransactions').value.toLowerCase();
+        const rows = document.querySelectorAll('.transaction-row');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+                row.style.animation = 'slideIn 0.3s ease';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    // View transaction details
+    function viewTransactionDetails(transactionId) {
+        // In a real application, this would fetch data from an API endpoint
+        // For now, we'll show sample data
+        const details = `
+            <div class="txn-detail-row">
+                <div class="row">
+                    <div class="col-6"><strong>Transaction ID:</strong></div>
+                    <div class="col-6 text-end">TXN2024122515301234</div>
+                </div>
+            </div>
+            <div class="txn-detail-row">
+                <div class="row">
+                    <div class="col-6"><strong>Date & Time:</strong></div>
+                    <div class="col-6 text-end">25 Dec 2024, 15:30</div>
+                </div>
+            </div>
+            <div class="txn-detail-row">
+                <div class="row">
+                    <div class="col-6"><strong>Type:</strong></div>
+                    <div class="col-6 text-end">
+                        <span class="txn-badge deposit">Deposit</span>
+                    </div>
+                </div>
+            </div>
+            <div class="txn-detail-row">
+                <div class="row">
+                    <div class="col-6"><strong>Amount:</strong></div>
+                    <div class="col-6 text-end">
+                        <span class="amount-positive">R1,000.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="txn-detail-row">
+                <div class="row">
+                    <div class="col-6"><strong>Service Fee:</strong></div>
+                    <div class="col-6 text-end">
+                        <span class="text-warning fw-bold">R25.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="txn-detail-row">
+                <div class="row">
+                    <div class="col-6"><strong>Net Amount:</strong></div>
+                    <div class="col-6 text-end">
+                        <span class="amount-positive">R975.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="txn-detail-row">
+                <div class="row">
+                    <div class="col-6"><strong>Status:</strong></div>
+                    <div class="col-6 text-end">
+                        <span class="status-badge completed">Completed</span>
+                    </div>
+                </div>
+            </div>
+            <div class="txn-detail-row">
+                <div class="row">
+                    <div class="col-6"><strong>Reference:</strong></div>
+                    <div class="col-6 text-end">December Salary Deposit</div>
+                </div>
+            </div>
+            <div class="txn-detail-row">
+                <div class="row">
+                    <div class="col-6"><strong>Balance After:</strong></div>
+                    <div class="col-6 text-end">
+                        <span class="amount-positive">R2,975.00</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('transactionDetails').innerHTML = details;
+        const modal = new bootstrap.Modal(document.getElementById('transactionModal'));
+        modal.show();
+    }
+    
+    // Export transactions to CSV
+    function exportTransactions() {
+        // In a real application, this would generate and download a CSV file
+        alert('Export feature would generate a CSV file with all your transaction history.');
+        // Example implementation:
+        // window.location.href = '/export/transactions/csv';
+    }
+    
+    // Download receipt
+    function downloadReceipt(transactionId) {
+        alert('Receipt download feature would generate a PDF receipt for transaction ' + transactionId);
+        // Example implementation:
+        // window.open('/receipt/' + transactionId, '_blank');
+    }
+    
+    // Add animation to table rows on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const rows = document.querySelectorAll('.transaction-row');
+        rows.forEach((row, index) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                row.style.transition = 'all 0.5s ease';
+                row.style.opacity = '1';
+                row.style.transform = 'translateY(0)';
+            }, index * 50);
+        });
+    });
+</script>
+{% endblock %}

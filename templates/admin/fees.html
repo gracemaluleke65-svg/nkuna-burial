@@ -1,0 +1,910 @@
+{% extends "base.html" %}
+
+{% block title %}Fee Management - Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Fee Management Specific Styles */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, #1e3a8a 100%);
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        border-radius: 0 0 20px 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 20%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(45deg, white, #bae6fd);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-item {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: var(--transition);
+        border: 2px solid transparent;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .stat-item:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-teal);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-teal), #38bdf8);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        transition: var(--transition);
+    }
+    
+    .stat-item:hover .stat-icon {
+        transform: rotateY(180deg);
+        background: linear-gradient(135deg, var(--accent-gold), #fbbf24);
+    }
+    
+    .stat-info h3 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        background: linear-gradient(45deg, var(--primary-teal), var(--accent-gold));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 0.25rem;
+    }
+    
+    /* Fee Cards */
+    .fee-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: var(--transition);
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .fee-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--primary-teal), var(--accent-gold));
+        transform: translateX(-100%);
+        transition: transform 0.5s ease;
+    }
+    
+    .fee-card:hover::before {
+        transform: translateX(0);
+    }
+    
+    .fee-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+        border-color: rgba(14, 165, 233, 0.2);
+    }
+    
+    .fee-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid rgba(14, 165, 233, 0.1);
+    }
+    
+    .fee-type {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-teal);
+        transition: var(--transition);
+    }
+    
+    .fee-card:hover .fee-type {
+        color: var(--accent-gold);
+        transform: translateX(5px);
+    }
+    
+    .fee-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .status-active {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-inactive {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    
+    .status-active .status-indicator {
+        background: #10b981;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-inactive .status-indicator {
+        background: #ef4444;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .fee-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .fee-detail-item {
+        padding: 0.75rem;
+        background: rgba(14, 165, 233, 0.05);
+        border-radius: 8px;
+        border-left: 3px solid var(--primary-teal);
+        transition: var(--transition);
+    }
+    
+    .fee-detail-item:hover {
+        background: rgba(14, 165, 233, 0.1);
+        border-left-color: var(--accent-gold);
+        transform: translateX(3px);
+    }
+    
+    .fee-detail-label {
+        font-size: 0.875rem;
+        color: var(--text-light);
+        margin-bottom: 0.25rem;
+    }
+    
+    .fee-detail-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+    
+    .fee-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        padding-top: 1rem;
+        border-top: 2px solid rgba(14, 165, 233, 0.1);
+    }
+    
+    /* Form Styling */
+    .form-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-top: 2rem;
+        transition: var(--transition);
+        border: 2px solid transparent;
+    }
+    
+    .form-card:hover {
+        border-color: var(--primary-teal);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .form-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid rgba(14, 165, 233, 0.1);
+    }
+    
+    .form-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+    
+    .form-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-label i {
+        color: var(--primary-teal);
+    }
+    
+    .form-control {
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        transition: var(--transition);
+        background: white;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-teal);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--primary-teal);
+        border-color: var(--primary-teal);
+    }
+    
+    /* Input Group Styling */
+    .input-group {
+        transition: var(--transition);
+    }
+    
+    .input-group:focus-within {
+        transform: translateY(-2px);
+    }
+    
+    .input-group-text {
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        color: white;
+        border: none;
+        border-radius: 10px 0 0 10px;
+        font-weight: 600;
+    }
+    
+    /* Toggle Switch */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    input:checked + .toggle-slider {
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+    }
+    
+    input:checked + .toggle-slider:before {
+        transform: translateX(30px);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--card-bg);
+        border-radius: 16px;
+        border: 2px dashed #cbd5e1;
+        transition: var(--transition);
+    }
+    
+    .empty-state:hover {
+        border-color: var(--primary-teal);
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: #94a3b8;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .fee-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .fee-details {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="page-title">Fee Management</h1>
+                <p class="lead text-light opacity-75 mb-0">
+                    Configure and manage platform fee structures, percentages, and fixed charges
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-modern">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="container">
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-icon">
+                <i class="fas fa-percentage"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ fees|length }}</h3>
+                <p class="text-muted mb-0">Configured Fees</p>
+            </div>
+        </div>
+        
+        <div class="stat-item">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ fees|selectattr('is_active')|list|length }}</h3>
+                <p class="text-muted mb-0">Active Fees</p>
+            </div>
+        </div>
+        
+        <div class="stat-item">
+            <div class="stat-icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ fees|rejectattr('is_active')|list|length }}</h3>
+                <p class="text-muted mb-0">Inactive Fees</p>
+            </div>
+        </div>
+        
+        <div class="stat-item">
+            <div class="stat-icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="stat-info">
+                <h3>4</h3>
+                <p class="text-muted mb-0">Fee Types</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fee Configuration Form -->
+<div class="container">
+    <div class="form-card">
+        <div class="form-header">
+            <div class="form-icon">
+                <i class="fas fa-cog"></i>
+            </div>
+            <h2 class="form-title">Add New Fee Configuration</h2>
+        </div>
+        
+        <form method="POST" action="{{ url_for('admin.manage_fees') }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-tag"></i> Fee Type
+                        </label>
+                        {{ form.fee_type(class="form-control", placeholder="e.g., service_fee, claim_fee") }}
+                        {% if form.fee_type.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.fee_type.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-align-left"></i> Description
+                        </label>
+                        {{ form.description(class="form-control", placeholder="Describe what this fee is for") }}
+                        {% if form.description.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.description.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-percent"></i> Percentage (%)
+                        </label>
+                        <div class="input-group">
+                            {{ form.percentage(class="form-control", placeholder="0.00") }}
+                            <span class="input-group-text">%</span>
+                        </div>
+                        {% if form.percentage.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.percentage.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Leave as 0 if not applicable</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-money-bill"></i> Fixed Amount (R)
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">R</span>
+                            {{ form.fixed_amount(class="form-control", placeholder="0.00") }}
+                        </div>
+                        {% if form.fixed_amount.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.fixed_amount.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-arrow-up"></i> Minimum Amount (R)
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">R</span>
+                            {{ form.minimum(class="form-control", placeholder="0.00") }}
+                        </div>
+                        {% if form.minimum.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.minimum.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <label class="form-label mb-0">
+                                <i class="fas fa-toggle-on"></i> Fee Status
+                            </label>
+                            <div class="form-check form-switch">
+                                {{ form.is_active(class="form-check-input", style="width: 3em; height: 1.5em;") }}
+                                <label class="form-check-label ms-2" for="{{ form.is_active.id }}">
+                                    {{ 'Active' if form.is_active.data else 'Inactive' }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mt-4">
+                <button type="submit" class="btn btn-modern btn-lg">
+                    <i class="fas fa-plus-circle me-2"></i> Add Fee Configuration
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Existing Fees List -->
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="gradient-text fw-bold mb-0">Configured Fees</h2>
+        <span class="badge bg-primary fs-6">{{ fees|length }} fees</span>
+    </div>
+    
+    {% if fees %}
+        {% for fee in fees %}
+        <div class="fee-card">
+            <div class="fee-header">
+                <div>
+                    <h3 class="fee-type">{{ fee.fee_type|replace('_', ' ')|title }}</h3>
+                    <p class="text-muted mb-0">{{ fee.description }}</p>
+                </div>
+                <div>
+                    <span class="fee-status {{ 'status-active' if fee.is_active else 'status-inactive' }}">
+                        <span class="status-indicator"></span>
+                        {{ 'Active' if fee.is_active else 'Inactive' }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="fee-details">
+                <div class="fee-detail-item">
+                    <div class="fee-detail-label">Percentage</div>
+                    <div class="fee-detail-value">
+                        {% if fee.percentage > 0 %}
+                        {{ "%.2f"|format(fee.percentage) }}%
+                        {% else %}
+                        <span class="text-muted">Not Set</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="fee-detail-item">
+                    <div class="fee-detail-label">Fixed Amount</div>
+                    <div class="fee-detail-value">
+                        {% if fee.fixed_amount > 0 %}
+                        R{{ "%.2f"|format(fee.fixed_amount) }}
+                        {% else %}
+                        <span class="text-muted">Not Set</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="fee-detail-item">
+                    <div class="fee-detail-label">Minimum Amount</div>
+                    <div class="fee-detail-value">
+                        {% if fee.minimum > 0 %}
+                        R{{ "%.2f"|format(fee.minimum) }}
+                        {% else %}
+                        <span class="text-muted">Not Set</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="fee-detail-item">
+                    <div class="fee-detail-label">Created</div>
+                    <div class="fee-detail-value">
+                        {{ fee.created_at.strftime('%Y-%m-%d') }}
+                    </div>
+                </div>
+                
+                <div class="fee-detail-item">
+                    <div class="fee-detail-label">Last Updated</div>
+                    <div class="fee-detail-value">
+                        {{ fee.updated_at.strftime('%Y-%m-%d') if fee.updated_at else 'Never' }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="fee-actions">
+                <a href="{{ url_for('admin.toggle_fee', fee_id=fee.id) }}" 
+                   class="btn btn-sm {{ 'btn-outline-warning' if fee.is_active else 'btn-outline-success' }}">
+                    <i class="fas fa-toggle-{{ 'on' if fee.is_active else 'off' }} me-1"></i>
+                    {{ 'Deactivate' if fee.is_active else 'Activate' }}
+                </a>
+                
+                <button class="btn btn-sm btn-outline-primary" 
+                        onclick="showFeeExample('{{ fee.fee_type }}', {{ fee.percentage }}, {{ fee.fixed_amount }}, {{ fee.minimum }})">
+                    <i class="fas fa-calculator me-1"></i> Test Calculation
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <h3 class="gradient-text fw-bold mb-3">No Fees Configured</h3>
+            <p class="text-muted mb-4">Start by adding your first fee configuration using the form above.</p>
+            <a href="#form" class="btn btn-modern">
+                <i class="fas fa-plus-circle me-2"></i> Add First Fee
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Fee Calculation Modal -->
+<div class="modal fade" id="feeCalculationModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title gradient-text fw-bold">Fee Calculation Test</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Fee Type</label>
+                        <input type="text" id="modalFeeType" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Test Amount (R)</label>
+                        <input type="number" id="testAmount" class="form-control" value="1000" min="1" step="1">
+                    </div>
+                </div>
+                
+                <div class="card-modern p-3 mb-3">
+                    <h6 class="fw-bold mb-3">Fee Configuration</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <small class="text-muted d-block">Percentage</small>
+                            <span id="modalPercentage" class="fw-bold">0%</span>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted d-block">Fixed Amount</small>
+                            <span id="modalFixedAmount" class="fw-bold">R0.00</span>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted d-block">Minimum</small>
+                            <span id="modalMinimum" class="fw-bold">R0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-success">
+                    <h6 class="fw-bold mb-2">Calculation Result</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Fee Amount:</span>
+                        <span id="calculationResult" class="fs-4 fw-bold">R0.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-modern" onclick="calculateFee()">
+                    <i class="fas fa-calculator me-2"></i> Calculate
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showFeeExample(feeType, percentage, fixedAmount, minimum) {
+        $('#modalFeeType').val(feeType.replace('_', ' ').toUpperCase());
+        $('#modalPercentage').text(percentage > 0 ? percentage.toFixed(2) + '%' : '0%');
+        $('#modalFixedAmount').text(fixedAmount > 0 ? 'R' + fixedAmount.toFixed(2) : 'R0.00');
+        $('#modalMinimum').text(minimum > 0 ? 'R' + minimum.toFixed(2) : 'R0.00');
+        
+        // Store values for calculation
+        $('#feeCalculationModal').data('percentage', percentage || 0);
+        $('#feeCalculationModal').data('fixedAmount', fixedAmount || 0);
+        $('#feeCalculationModal').data('minimum', minimum || 0);
+        
+        // Calculate initial result
+        calculateFee();
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('feeCalculationModal'));
+        modal.show();
+    }
+    
+    function calculateFee() {
+        const testAmount = parseFloat($('#testAmount').val()) || 0;
+        const percentage = $('#feeCalculationModal').data('percentage') || 0;
+        const fixedAmount = $('#feeCalculationModal').data('fixedAmount') || 0;
+        const minimum = $('#feeCalculationModal').data('minimum') || 0;
+        
+        let feeAmount = 0;
+        
+        // Calculate percentage-based fee
+        if (percentage > 0) {
+            feeAmount += testAmount * (percentage / 100);
+        }
+        
+        // Add fixed amount
+        feeAmount += fixedAmount;
+        
+        // Apply minimum if applicable
+        if (minimum > 0 && feeAmount < minimum) {
+            feeAmount = minimum;
+        }
+        
+        // Update result
+        $('#calculationResult').text('R' + feeAmount.toFixed(2));
+        
+        // Add animation effect
+        $('#calculationResult').css({
+            'transform': 'scale(1.2)',
+            'transition': 'transform 0.2s ease'
+        });
+        
+        setTimeout(() => {
+            $('#calculationResult').css('transform', 'scale(1)');
+        }, 200);
+    }
+    
+    // Form field validation and enhancement
+    document.addEventListener('DOMContentLoaded', function() {
+        // Percentage input
+        const percentageInput = document.querySelector('#percentage');
+        if (percentageInput) {
+            percentageInput.addEventListener('input', function() {
+                const value = parseFloat(this.value) || 0;
+                const group = this.closest('.form-group');
+                
+                if (value > 100) {
+                    this.value = 100;
+                    group.classList.add('border-danger');
+                    setTimeout(() => group.classList.remove('border-danger'), 1000);
+                }
+            });
+        }
+        
+        // Fixed amount input
+        const fixedAmountInput = document.querySelector('#fixed_amount');
+        if (fixedAmountInput) {
+            fixedAmountInput.addEventListener('input', function() {
+                const value = parseFloat(this.value) || 0;
+                const group = this.closest('.form-group');
+                
+                if (value > 100000) {
+                    this.value = 100000;
+                    group.classList.add('border-danger');
+                    setTimeout(() => group.classList.remove('border-danger'), 1000);
+                }
+            });
+        }
+        
+        // Toggle switch animation
+        const toggleSwitch = document.querySelector('.form-check-input');
+        if (toggleSwitch) {
+            toggleSwitch.addEventListener('change', function() {
+                const label = this.nextElementSibling;
+                label.textContent = this.checked ? 'Active' : 'Inactive';
+                
+                // Add animation
+                label.style.transform = 'scale(1.1)';
+                label.style.color = this.checked ? '#10b981' : '#ef4444';
+                setTimeout(() => {
+                    label.style.transform = 'scale(1)';
+                }, 200);
+            });
+        }
+        
+        // Fee card hover effects enhancement
+        document.querySelectorAll('.fee-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                const feeType = this.querySelector('.fee-type');
+                if (feeType) {
+                    feeType.style.transform = 'translateX(5px)';
+                }
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                const feeType = this.querySelector('.fee-type');
+                if (feeType) {
+                    feeType.style.transform = 'translateX(0)';
+                }
+            });
+        });
+        
+        // Auto-calculate when test amount changes
+        $('#testAmount').on('input', calculateFee);
+        
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

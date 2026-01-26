@@ -1,0 +1,768 @@
+{% extends "base.html" %}
+
+{% block title %}Create Policy - Nkuna Burial Society{% endblock %}
+
+{% block extra_css %}
+<style>
+    .policy-create-section {
+        background: linear-gradient(135deg, 
+            rgba(248, 250, 252, 0.95) 0%, 
+            rgba(241, 245, 249, 0.95) 100%);
+        min-height: calc(100vh - 300px);
+        padding: 4rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .policy-create-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+    }
+    
+    .create-card {
+        background: var(--card-bg);
+        border-radius: 24px;
+        border: none;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: var(--transition);
+        position: relative;
+        backdrop-filter: blur(10px);
+    }
+    
+    .create-card:hover {
+        transform: translateY(-8px) scale(1.01);
+        box-shadow: 0 30px 80px rgba(14, 165, 233, 0.15);
+    }
+    
+    .create-header {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, #0f172a 100%);
+        padding: 2.5rem;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .create-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-gold), var(--primary-teal), #10b981);
+    }
+    
+    .create-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .create-icon::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transform: rotate(45deg);
+        transition: var(--transition);
+    }
+    
+    .create-icon:hover {
+        transform: rotateY(180deg) scale(1.1);
+        border-color: var(--accent-gold);
+    }
+    
+    .create-icon:hover::before {
+        transform: rotate(225deg);
+    }
+    
+    .form-group-modern {
+        position: relative;
+        margin-bottom: 2rem;
+    }
+    
+    .form-label-modern {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-label-modern:hover {
+        color: var(--primary-teal);
+        transform: translateX(5px);
+    }
+    
+    .form-input-modern {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.8);
+        color: var(--text-dark);
+        font-size: 1rem;
+        transition: var(--transition);
+        font-weight: 500;
+    }
+    
+    .form-input-modern:hover {
+        border-color: var(--primary-teal);
+        background: white;
+        box-shadow: 0 5px 20px rgba(14, 165, 233, 0.1);
+    }
+    
+    .form-input-modern:focus {
+        outline: none;
+        border-color: var(--primary-teal);
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .input-icon {
+        position: absolute;
+        right: 1.5rem;
+        top: 3.3rem;
+        color: var(--primary-teal);
+        transition: var(--transition);
+    }
+    
+    .form-input-modern:focus + .input-icon {
+        color: var(--accent-gold);
+        transform: scale(1.2);
+    }
+    
+    .btn-create {
+        background: linear-gradient(135deg, var(--primary-teal) 0%, #0284c7 100%);
+        color: white;
+        border: none;
+        padding: 1.25rem 2.5rem;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        width: 100%;
+        transition: var(--transition);
+        box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
+        position: relative;
+        overflow: hidden;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-create::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: 0.6s;
+    }
+    
+    .btn-create:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(14, 165, 233, 0.4);
+        background: linear-gradient(135deg, #0284c7 0%, var(--primary-teal) 100%);
+    }
+    
+    .btn-create:hover::before {
+        left: 100%;
+    }
+    
+    .btn-create:active {
+        transform: translateY(-1px);
+    }
+    
+    .policy-info {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(251, 191, 36, 0.08));
+        border-left: 4px solid var(--primary-teal);
+        padding: 1.75rem;
+        border-radius: 16px;
+        margin-bottom: 2.5rem;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .policy-info:hover {
+        transform: translateX(10px);
+        border-left-color: var(--accent-gold);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .policy-info::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.05), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+    
+    .policy-info:hover::before {
+        transform: translateX(100%);
+    }
+    
+    .coverage-range {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px dashed #e2e8f0;
+    }
+    
+    .range-value {
+        font-weight: 700;
+        color: var(--primary-teal);
+        font-size: 0.9rem;
+        transition: var(--transition);
+    }
+    
+    .range-value:hover {
+        color: var(--accent-gold);
+        transform: scale(1.1);
+    }
+    
+    .premium-display {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(14, 165, 233, 0.1));
+        border: 2px solid rgba(16, 185, 129, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        transition: var(--transition);
+    }
+    
+    .premium-display:hover {
+        border-color: #10b981;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.15);
+    }
+    
+    .premium-amount {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(45deg, #10b981, var(--primary-teal));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+        transition: var(--transition);
+    }
+    
+    .premium-display:hover .premium-amount {
+        background: linear-gradient(45deg, var(--accent-gold), #f59e0b);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+    
+    /* Slider Style */
+    .coverage-slider {
+        width: 100%;
+        height: 8px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: linear-gradient(90deg, #e2e8f0, var(--primary-teal));
+        border-radius: 4px;
+        outline: none;
+        margin-top: 1rem;
+        transition: var(--transition);
+    }
+    
+    .coverage-slider:hover {
+        background: linear-gradient(90deg, #e2e8f0, var(--accent-gold));
+        height: 10px;
+    }
+    
+    .coverage-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 24px;
+        height: 24px;
+        background: linear-gradient(135deg, var(--primary-teal), #0284c7);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+        transition: var(--transition);
+        border: 3px solid white;
+    }
+    
+    .coverage-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+        background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+        box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+    }
+    
+    /* Back Link */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        color: var(--text-light);
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.03);
+    }
+    
+    .back-link:hover {
+        color: var(--primary-teal);
+        background: rgba(14, 165, 233, 0.1);
+        transform: translateX(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Animation for success message */
+    @keyframes celebrate {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .celebrate {
+        animation: celebrate 0.5s ease;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .policy-create-section {
+            padding: 2rem 0;
+        }
+        
+        .create-header {
+            padding: 1.5rem;
+        }
+        
+        .create-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+        
+        .premium-amount {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="policy-create-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7">
+                <div class="create-card card-modern">
+                    <!-- Header -->
+                    <div class="create-header">
+                        <div class="create-icon">
+                            <i class="fas fa-file-contract"></i>
+                        </div>
+                        <h1 class="display-5 fw-bold mb-2">Create New Policy</h1>
+                        <p class="text-light opacity-90 mb-0">Secure your family's future with comprehensive burial coverage</p>
+                    </div>
+                    
+                    <!-- Form -->
+                    <div class="p-4 p-md-5">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }} alert-modern alert-dismissible fade show mb-4 {% if category == 'success' %}celebrate{% endif %}" role="alert">
+                                        {% if category == 'success' %}
+                                            <i class="fas fa-check-circle me-2"></i>
+                                        {% elif category == 'danger' %}
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                        {% elif category == 'warning' %}
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                        {% else %}
+                                            <i class="fas fa-info-circle me-2"></i>
+                                        {% endif %}
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <!-- Policy Information -->
+                        <div class="policy-info">
+                            <h5 class="fw-bold text-primary mb-3 d-flex align-items-center">
+                                <i class="fas fa-info-circle me-3"></i> 
+                                <span>Policy Details & Guidelines</span>
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <p class="mb-1">
+                                        <i class="fas fa-shield-alt text-primary me-2"></i>
+                                        <strong>Coverage Range:</strong> 
+                                        <span class="text-primary">R1,000 - R1,000,000</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <p class="mb-1">
+                                        <i class="fas fa-percentage text-success me-2"></i>
+                                        <strong>Monthly Premium:</strong> 
+                                        <span class="text-success">0.1% of coverage amount</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <p class="mb-1">
+                                        <i class="fas fa-users text-warning me-2"></i>
+                                        <strong>Family Members:</strong> 
+                                        <span class="text-warning">You + up to 14 members</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <p class="mb-0">
+                                        <i class="fas fa-calendar-check text-info me-2"></i>
+                                        <strong>Payment Cycle:</strong> 
+                                        <span class="text-info">Monthly, starting today</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <form method="POST" action="{{ url_for('main.create_policy') }}" id="policyForm">
+                            {{ form.hidden_tag() }}
+                            
+                            <!-- Policy Name -->
+                            <div class="form-group-modern">
+                                <label for="policy_name" class="form-label-modern">
+                                    <i class="fas fa-tag me-2"></i>Policy Name
+                                </label>
+                                <input type="text" 
+                                       class="form-input-modern {% if form.policy_name.errors %}is-invalid{% endif %}" 
+                                       id="policy_name" 
+                                       name="policy_name" 
+                                       placeholder="e.g., Family Burial Policy" 
+                                       value="{{ form.policy_name.data or '' }}"
+                                       required>
+                                <i class="fas fa-file-signature input-icon"></i>
+                                {% if form.policy_name.errors %}
+                                    <div class="invalid-feedback d-block mt-2">
+                                        {% for error in form.policy_name.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Coverage Amount with Slider -->
+                            <div class="form-group-modern">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label for="coverage_amount" class="form-label-modern">
+                                        <i class="fas fa-shield-alt me-2"></i>Coverage Amount
+                                    </label>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-primary bg-gradient px-3 py-2">
+                                            <i class="fas fa-rand-sign me-1"></i>
+                                            <span id="coverage-display">R0</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Slider -->
+                                <input type="range" 
+                                       class="coverage-slider" 
+                                       id="coverage_slider" 
+                                       min="1000" 
+                                       max="1000000" 
+                                       step="1000" 
+                                       value="{{ form.coverage_amount.data or 50000 }}">
+                                
+                                <!-- Input Field -->
+                                <input type="number" 
+                                       class="form-input-modern mt-3 {% if form.coverage_amount.errors %}is-invalid{% endif %}" 
+                                       id="coverage_amount" 
+                                       name="coverage_amount" 
+                                       placeholder="Enter coverage amount" 
+                                       value="{{ form.coverage_amount.data or 50000 }}"
+                                       min="1000" 
+                                       max="1000000" 
+                                       step="1000"
+                                       required>
+                                
+                                <div class="coverage-range">
+                                    <span class="range-value">
+                                        <i class="fas fa-arrow-down me-1"></i> Min: R1,000
+                                    </span>
+                                    <span class="range-value">
+                                        <i class="fas fa-arrow-up me-1"></i> Max: R1,000,000
+                                    </span>
+                                </div>
+                                
+                                {% if form.coverage_amount.errors %}
+                                    <div class="invalid-feedback d-block mt-2">
+                                        {% for error in form.coverage_amount.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Start Date -->
+                            <div class="form-group-modern">
+                                <label for="start_date" class="form-label-modern">
+                                    <i class="fas fa-calendar-alt me-2"></i>Policy Start Date
+                                </label>
+                                <input type="date" 
+                                       class="form-input-modern {% if form.start_date.errors %}is-invalid{% endif %}" 
+                                       id="start_date" 
+                                       name="start_date" 
+                                       value="{{ form.start_date.data or '' }}"
+                                       required>
+                                <i class="fas fa-calendar-check input-icon"></i>
+                                {% if form.start_date.errors %}
+                                    <div class="invalid-feedback d-block mt-2">
+                                        {% for error in form.start_date.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Premium Preview -->
+                            <div class="premium-display">
+                                <div class="text-center">
+                                    <h6 class="fw-bold text-dark mb-3">
+                                        <i class="fas fa-calculator me-2"></i>Estimated Monthly Premium
+                                    </h6>
+                                    <div class="premium-amount mb-2">
+                                        R<span id="premium-preview">0.00</span>
+                                    </div>
+                                    <p class="text-muted mb-0">
+                                        <small>
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Base premium only. Additional members increase total premium.
+                                        </small>
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Summary -->
+                            <div class="alert alert-light alert-modern mb-4">
+                                <h6 class="fw-bold mb-3 text-center">
+                                    <i class="fas fa-clipboard-check me-2"></i>Policy Summary
+                                </h6>
+                                <div class="row text-center">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="p-3 rounded bg-light">
+                                            <small class="text-muted d-block">Coverage Amount</small>
+                                            <strong class="text-primary" id="summary-coverage">R0</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="p-3 rounded bg-light">
+                                            <small class="text-muted d-block">Monthly Premium</small>
+                                            <strong class="text-success" id="summary-premium">R0</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="p-3 rounded bg-light">
+                                            <small class="text-muted d-block">Annual Cost</small>
+                                            <strong class="text-warning" id="summary-annual">R0</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="mb-4">
+                                <button type="submit" class="btn-create" id="submitBtn">
+                                    <i class="fas fa-plus-circle me-2"></i>Create Policy
+                                </button>
+                            </div>
+                            
+                            <!-- Back Link -->
+                            <div class="text-center">
+                                <a href="{{ url_for('main.dashboard') }}" class="back-link">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const coverageInput = document.getElementById('coverage_amount');
+        const coverageSlider = document.getElementById('coverage_slider');
+        const coverageDisplay = document.getElementById('coverage-display');
+        const premiumPreview = document.getElementById('premium-preview');
+        const startDateInput = document.getElementById('start_date');
+        const summaryCoverage = document.getElementById('summary-coverage');
+        const summaryPremium = document.getElementById('summary-premium');
+        const summaryAnnual = document.getElementById('summary-annual');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        startDateInput.setAttribute('min', today);
+        
+        // Format currency
+        function formatCurrency(amount) {
+            return 'R' + parseFloat(amount).toLocaleString('en-ZA', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        
+        // Calculate and update premium
+        function updatePremium() {
+            const coverage = parseFloat(coverageInput.value) || 0;
+            const premium = coverage * 0.001; // 0.1% of coverage
+            
+            // Update displays
+            premiumPreview.textContent = premium.toFixed(2);
+            coverageDisplay.textContent = formatCurrency(coverage);
+            summaryCoverage.textContent = formatCurrency(coverage);
+            summaryPremium.textContent = formatCurrency(premium);
+            summaryAnnual.textContent = formatCurrency(premium * 12);
+            
+            // Update slider
+            coverageSlider.value = coverage;
+            
+            // Animate premium display
+            const premiumElement = document.querySelector('.premium-amount');
+            premiumElement.classList.remove('celebrate');
+            setTimeout(() => {
+                premiumElement.classList.add('celebrate');
+            }, 10);
+        }
+        
+        // Sync slider with input
+        coverageSlider.addEventListener('input', function() {
+            coverageInput.value = this.value;
+            updatePremium();
+        });
+        
+        // Sync input with slider
+        coverageInput.addEventListener('input', function() {
+            coverageSlider.value = this.value;
+            updatePremium();
+        });
+        
+        // Initial calculation
+        updatePremium();
+        
+        // Form validation with enhanced feedback
+        const form = document.getElementById('policyForm');
+        form.addEventListener('submit', function(e) {
+            const coverage = parseFloat(coverageInput.value);
+            
+            // Clear previous validation styles
+            coverageInput.classList.remove('is-invalid', 'is-valid');
+            
+            if (coverage < 1000 || coverage > 1000000) {
+                e.preventDefault();
+                coverageInput.classList.add('is-invalid');
+                
+                // Animate the error
+                coverageInput.style.animation = 'shake 0.5s ease';
+                setTimeout(() => {
+                    coverageInput.style.animation = '';
+                }, 500);
+                
+                return false;
+            } else {
+                coverageInput.classList.add('is-valid');
+            }
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Creating Policy...';
+            submitBtn.disabled = true;
+        });
+        
+        // Add shake animation for errors
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Animate form elements on focus
+        document.querySelectorAll('.form-input-modern').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-2px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // Auto-format coverage input on blur
+        coverageInput.addEventListener('blur', function() {
+            const value = parseFloat(this.value);
+            if (!isNaN(value)) {
+                // Round to nearest 1000
+                const rounded = Math.round(value / 1000) * 1000;
+                this.value = Math.max(1000, Math.min(1000000, rounded));
+                updatePremium();
+            }
+        });
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter to submit
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                if (form.checkValidity()) {
+                    submitBtn.click();
+                }
+            }
+            
+            // Escape key to go back
+            if (e.key === 'Escape') {
+                window.location.href = "{{ url_for('main.dashboard') }}";
+            }
+        });
+        
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

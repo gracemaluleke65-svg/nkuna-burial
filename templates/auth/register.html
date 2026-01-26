@@ -1,0 +1,803 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Nkuna Burial Society{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Registration Page Specific Styles */
+    .register-section {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        padding: 4rem 0;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .register-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 70%);
+        z-index: 0;
+    }
+    
+    .register-card {
+        background: var(--card-bg);
+        border-radius: 24px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+        transition: var(--transition);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .register-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    }
+    
+    .register-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, var(--primary-teal), var(--accent-gold));
+        z-index: 2;
+    }
+    
+    .register-header {
+        background: linear-gradient(135deg, var(--primary-dark), #1e293b);
+        color: white;
+        padding: 2.5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .register-header::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transform: translateX(-100%);
+        animation: shine 3s infinite;
+    }
+    
+    @keyframes shine {
+        100% { transform: translateX(100%); }
+    }
+    
+    .register-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(45deg, white, #bae6fd);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    .register-subtitle {
+        color: #cbd5e1;
+        font-size: 1.1rem;
+    }
+    
+    .form-group-modern {
+        margin-bottom: 1.75rem;
+        position: relative;
+    }
+    
+    .form-label-modern {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        transition: var(--transition);
+        position: relative;
+        padding-left: 0.5rem;
+    }
+    
+    .form-label-modern::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 16px;
+        background: var(--primary-teal);
+        border-radius: 3px;
+        opacity: 0.7;
+    }
+    
+    .form-control-modern {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: var(--transition);
+        background: white;
+        color: var(--text-dark);
+    }
+    
+    .form-control-modern:focus {
+        outline: none;
+        border-color: var(--primary-teal);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .form-control-modern:hover {
+        border-color: #94a3b8;
+    }
+    
+    .form-control-modern::placeholder {
+        color: #94a3b8;
+    }
+    
+    .input-with-icon {
+        position: relative;
+    }
+    
+    .input-icon {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        transition: var(--transition);
+    }
+    
+    .form-control-modern:focus + .input-icon {
+        color: var(--primary-teal);
+    }
+    
+    .form-text-modern {
+        display: block;
+        margin-top: 0.375rem;
+        font-size: 0.875rem;
+        color: #64748b;
+        padding-left: 0.5rem;
+    }
+    
+    .checkbox-modern {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        cursor: pointer;
+        user-select: none;
+        transition: var(--transition);
+        padding: 0.75rem;
+        border-radius: 12px;
+        background: rgba(14, 165, 233, 0.05);
+    }
+    
+    .checkbox-modern:hover {
+        background: rgba(14, 165, 233, 0.1);
+        transform: translateX(5px);
+    }
+    
+    .checkbox-modern input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #cbd5e1;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        flex-shrink: 0;
+        transition: var(--transition);
+    }
+    
+    .checkbox-modern input[type="checkbox"]:checked {
+        background: var(--primary-teal);
+        border-color: var(--primary-teal);
+    }
+    
+    .checkbox-modern input[type="checkbox"]:checked::after {
+        content: '✓';
+        position: absolute;
+        color: white;
+        font-weight: bold;
+        font-size: 14px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+    
+    .password-strength {
+        height: 4px;
+        background: #e2e8f0;
+        border-radius: 2px;
+        margin-top: 0.5rem;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .password-strength-bar {
+        height: 100%;
+        width: 0;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+    
+    .strength-weak { background: #ef4444; }
+    .strength-fair { background: #f59e0b; }
+    .strength-good { background: #3b82f6; }
+    .strength-strong { background: #10b981; }
+    
+    .form-footer {
+        text-align: center;
+        padding-top: 2rem;
+        border-top: 1px solid #e2e8f0;
+        margin-top: 2rem;
+    }
+    
+    .form-footer a {
+        color: var(--primary-teal);
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+        position: relative;
+    }
+    
+    .form-footer a::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--accent-gold);
+        transition: var(--transition);
+    }
+    
+    .form-footer a:hover {
+        color: var(--primary-dark);
+    }
+    
+    .form-footer a:hover::after {
+        width: 100%;
+    }
+    
+    /* Password toggle */
+    .password-toggle {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .password-toggle:hover {
+        color: var(--primary-teal);
+    }
+    
+    /* Progress steps */
+    .registration-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+    
+    .registration-steps::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: #e2e8f0;
+        z-index: 1;
+    }
+    
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+        flex: 1;
+    }
+    
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #94a3b8;
+        transition: var(--transition);
+        margin-bottom: 0.5rem;
+    }
+    
+    .step.active .step-circle {
+        background: var(--primary-teal);
+        border-color: var(--primary-teal);
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 5px 15px rgba(14, 165, 233, 0.3);
+    }
+    
+    .step-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .step.active .step-label {
+        color: var(--primary-dark);
+        font-weight: 600;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .register-section {
+            padding: 2rem 0;
+        }
+        
+        .register-title {
+            font-size: 2rem;
+        }
+        
+        .registration-steps {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="register-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-8 col-lg-10">
+                <!-- Registration Progress -->
+                <div class="registration-steps mb-5">
+                    <div class="step active">
+                        <div class="step-circle">1</div>
+                        <span class="step-label">Personal Info</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-circle">2</div>
+                        <span class="step-label">Account Setup</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-circle">3</div>
+                        <span class="step-label">Verification</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-circle">4</div>
+                        <span class="step-label">Complete</span>
+                    </div>
+                </div>
+                
+                <!-- Registration Card -->
+                <div class="register-card">
+                    <div class="register-header">
+                        <h1 class="register-title">Create Your Account</h1>
+                        <p class="register-subtitle">Join thousands of South Africans managing their burial society digitally</p>
+                    </div>
+                    
+                    <div class="p-5">
+                        <form method="POST" action="{{ url_for('auth.register') }}" id="registrationForm">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern" for="id_number">
+                                            <i class="fas fa-id-card me-2"></i>ID Number
+                                        </label>
+                                        <div class="input-with-icon">
+                                            <input type="text" 
+                                                   class="form-control-modern" 
+                                                   id="id_number" 
+                                                   name="id_number"
+                                                   pattern="[0-9]{13}"
+                                                   maxlength="13"
+                                                   required
+                                                   placeholder="Enter 13-digit SA ID">
+                                            <i class="fas fa-passport input-icon"></i>
+                                        </div>
+                                        <small class="form-text-modern">13-digit South African ID number</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern" for="email">
+                                            <i class="fas fa-envelope me-2"></i>Email Address
+                                        </label>
+                                        <div class="input-with-icon">
+                                            <input type="email" 
+                                                   class="form-control-modern" 
+                                                   id="email" 
+                                                   name="email"
+                                                   required
+                                                   placeholder="your.email@example.com">
+                                            <i class="fas fa-at input-icon"></i>
+                                        </div>
+                                        <small class="form-text-modern">We'll send important notifications here</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern" for="first_name">
+                                            <i class="fas fa-user me-2"></i>First Name
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control-modern" 
+                                               id="first_name" 
+                                               name="first_name"
+                                               required
+                                               placeholder="Enter your first name">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern" for="last_name">
+                                            <i class="fas fa-user me-2"></i>Last Name
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control-modern" 
+                                               id="last_name" 
+                                               name="last_name"
+                                               required
+                                               placeholder="Enter your last name">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- PHONE NUMBER FIELD -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern" for="phone">
+                                    <i class="fas fa-phone me-2"></i>Phone Number
+                                </label>
+                                <div class="input-with-icon">
+                                    <input type="tel" 
+                                           class="form-control-modern" 
+                                           id="phone" 
+                                           name="phone"
+                                           required
+                                           pattern="0\d{9}"
+                                           maxlength="10"
+                                           placeholder="0721234567">
+                                    <i class="fas fa-mobile-alt input-icon"></i>
+                                </div>
+                                <small class="form-text-modern">Enter a 10-digit South African mobile number</small>
+                                <div id="phone-feedback" class="form-text-modern"></div>
+                            </div>
+
+                            <div class="form-group-modern">
+                                <label class="form-label-modern" for="address">
+                                    <i class="fas fa-home me-2"></i>Residential Address
+                                </label>
+                                <textarea class="form-control-modern" 
+                                          id="address" 
+                                          name="address" 
+                                          rows="3"
+                                          required
+                                          placeholder="Enter your full residential address"></textarea>
+                                <small class="form-text-modern">Required for policy documentation</small>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern" for="password">
+                                            <i class="fas fa-lock me-2"></i>Password
+                                        </label>
+                                        <div class="input-with-icon">
+                                            <input type="password" 
+                                                   class="form-control-modern" 
+                                                   id="password" 
+                                                   name="password"
+                                                   minlength="8"
+                                                   required
+                                                   placeholder="Create a strong password">
+                                            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="password-strength">
+                                            <div class="password-strength-bar" id="password-strength-bar"></div>
+                                        </div>
+                                        <small class="form-text-modern">Minimum 8 characters with letters and numbers</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern" for="confirm_password">
+                                            <i class="fas fa-lock me-2"></i>Confirm Password
+                                        </label>
+                                        <div class="input-with-icon">
+                                            <input type="password" 
+                                                   class="form-control-modern" 
+                                                   id="confirm_password" 
+                                                   name="confirm_password"
+                                                   required
+                                                   placeholder="Confirm your password">
+                                            <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div id="password-match" class="form-text-modern"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group-modern">
+                                <label class="checkbox-modern">
+                                    <input type="checkbox" id="agree_terms" name="agree_terms" required>
+                                    <span>
+                                        I agree to the 
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms & Conditions</a> 
+                                        and 
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a>
+                                        of Nkuna Burial Society
+                                    </span>
+                                </label>
+                            </div>
+                            
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn-modern btn-lg">
+                                    <i class="fas fa-user-plus me-2"></i>Create Account
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div class="form-footer">
+                            <p class="mb-2">Already have an account? 
+                                <a href="{{ url_for('auth.login') }}">Sign In</a>
+                            </p>
+                            <p>
+                                <a href="{{ url_for('main.index') }}">
+                                    <i class="fas fa-arrow-left me-1"></i>Back to Home
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Benefits Section -->
+                <div class="row mt-5">
+                    <div class="col-md-4">
+                        <div class="card-modern text-center p-4 hover-lift">
+                            <div class="feature-icon mx-auto mb-3">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h5 class="fw-bold">Secure & Protected</h5>
+                            <p class="text-muted">Bank-level security with encryption for all your data</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card-modern text-center p-4 hover-lift">
+                            <div class="feature-icon mx-auto mb-3">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <h5 class="fw-bold">Instant Access</h5>
+                            <p class="text-muted">Get started immediately after registration</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card-modern text-center p-4 hover-lift">
+                            <div class="feature-icon mx-auto mb-3">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <h5 class="fw-bold">24/7 Support</h5>
+                            <p class="text-muted">Our team is always ready to help you</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title gradient-text">Terms & Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Membership Agreement</h6>
+                <p>By registering, you agree to the terms of our burial society membership...</p>
+                <!-- Add full terms here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title gradient-text">Privacy Policy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Data Protection</h6>
+                <p>We are committed to protecting your personal information...</p>
+                <!-- Add full privacy policy here -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // PASSWORD STRENGTH CHECKER
+    const passwordInput = document.getElementById('password');
+    const strengthBar = document.getElementById('password-strength-bar');
+    const confirmInput = document.getElementById('confirm_password');
+    const matchText = document.getElementById('password-match');
+
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        let strength = 0;
+        
+        if (password.length >= 8) strength += 25;
+        if (/[A-Z]/.test(password)) strength += 25;
+        if (/[0-9]/.test(password)) strength += 25;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+
+        strengthBar.style.width = strength + '%';
+        strengthBar.className = 'password-strength-bar ';
+
+        if (strength < 50) {
+            strengthBar.classList.add('strength-weak');
+            matchText.textContent = 'Weak password';
+            matchText.style.color = '#ef4444';
+        } else if (strength < 75) {
+            strengthBar.classList.add('strength-fair');
+            matchText.textContent = 'Fair password';
+            matchText.style.color = '#f59e0b';
+        } else if (strength < 100) {
+            strengthBar.classList.add('strength-good');
+            matchText.textContent = 'Good password';
+            matchText.style.color = '#3b82f6';
+        } else {
+            strengthBar.classList.add('strength-strong');
+            matchText.textContent = 'Strong password!';
+            matchText.style.color = '#10b981';
+        }
+
+        checkPasswordMatch();
+    });
+
+    confirmInput.addEventListener('input', checkPasswordMatch);
+
+    function checkPasswordMatch() {
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+
+        if (confirm === '') {
+            matchText.textContent = '';
+            return;
+        }
+
+        if (password === confirm) {
+            matchText.textContent = '✓ Passwords match';
+            matchText.style.color = '#10b981';
+            confirmInput.style.borderColor = '#10b981';
+        } else {
+            matchText.textContent = '✗ Passwords do not match';
+            matchText.style.color = '#ef4444';
+            confirmInput.style.borderColor = '#ef4444';
+        }
+    }
+
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const toggle = field.nextElementSibling.querySelector('i');
+        
+        if (field.type === 'password') {
+            field.type = 'text';
+            toggle.classList.remove('fa-eye');
+            toggle.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            toggle.classList.remove('fa-eye-slash');
+            toggle.classList.add('fa-eye');
+        }
+    }
+
+    // FORM VALIDATION
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+        const phone = document.getElementById('phone').value;
+
+        if (password !== confirm) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+            return false;
+        }
+
+        if (password.length < 8) {
+            e.preventDefault();
+            alert('Password must be at least 8 characters long');
+            return false;
+        }
+
+        if (!/^0\d{9}$/.test(phone)) {
+            e.preventDefault();
+            alert('Phone number must be 10 digits starting with 0');
+            return false;
+        }
+
+        if (!document.getElementById('agree_terms').checked) {
+            e.preventDefault();
+            alert('You must agree to the Terms & Conditions');
+            return false;
+        }
+
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Creating Account...';
+        submitBtn.disabled = true;
+    });
+
+    // ID number validation
+    document.getElementById('id_number').addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, 13);
+        const icon = this.nextElementSibling;
+
+        if (this.value.length === 13) {
+            if (/^\d{13}$/.test(this.value)) {
+                icon.style.color = '#10b981';
+                icon.className = 'fas fa-check-circle input-icon';
+            } else {
+                icon.style.color = '#ef4444';
+                icon.className = 'fas fa-exclamation-circle input-icon';
+            }
+        }
+    });
+
+    // PHONE VALIDATION FEEDBACK
+    document.getElementById('phone').addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, 10);
+        const feedback = document.getElementById('phone-feedback');
+
+        if (this.value.length === 10 && /^0\d{9}$/.test(this.value)) {
+            feedback.textContent = '✓ Valid number';
+            feedback.style.color = '#10b981';
+            this.style.borderColor = '#10b981';
+        } else {
+            feedback.textContent = '✗ Enter a 10-digit number starting with 0';
+            feedback.style.color = '#ef4444';
+            this.style.borderColor = '#ef4444';
+        }
+    });
+</script>
+{% endblock %}
