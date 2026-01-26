@@ -272,14 +272,19 @@ def debug_db():
 
 
 # ------------------------------------------------------------------
+#  CRITICAL FIX: Initialize database on startup (not just in __main__)
+# ------------------------------------------------------------------
+print("🚀 Initializing database on application startup...")
+init_database()
+print("✅ Startup initialization complete")
+
+# ------------------------------------------------------------------
 #  Run the development server
 # ------------------------------------------------------------------
 if __name__ == '__main__':
     print('=' * 60)
     print('NKUNA BURIAL SOCIETY DIGITAL PLATFORM')
     print('=' * 60)
-
-    init_database()
 
     print('\nStarting application...')
     print('Access the application at: http://localhost:5000')
