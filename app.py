@@ -126,71 +126,95 @@ def make_shell_context():
     }
 
 # ------------------------------------------------------------------
-#  Database Migrations - AUTO UPGRADE ON STARTUP WITH VERSION FIX
+#  CRITICAL FIX: Ensure database schema matches models
+# ------------------------------------------------------------------
+def fix_database_schema():
+    """Manually fix missing columns that migrations missed"""
+    with app.app_context():
+        try:
+            print("🔧 Checking database schema...")
+            from sqlalchemy import text, inspect
+            
+            inspector = inspect(db.engine)
+            columns = [col['name'] for col in inspector.get_columns('users')]
+            
+            print(f"📊 Found columns in users table: {columns}")
+            
+            # Check for first_name
+            if 'first_name' not in columns:
+                print("⚠️  Missing first_name column! Adding it...")
+                db.session.execute(text("""
+                    ALTER TABLE users 
+                    ADD COLUMN first_name VARCHAR(50) NOT NULL DEFAULT 'Unknown'
+                """))
+                db.session.execute(text("""
+                    ALTER TABLE users 
+                    ALTER COLUMN first_name DROP DEFAULT
+                """))
+                db.session.commit()
+                print("✅ Added first_name column")
+            else:
+                print("✅ first_name column exists")
+            
+            # Check for last_name
+            if 'last_name' not in columns:
+                print("⚠️  Missing last_name column! Adding it...")
+                db.session.session.execute(text("""
+                    ALTER TABLE users 
+                    ADD COLUMN last_name VARCHAR(50) NOT NULL DEFAULT 'Unknown'
+                """))
+                db.session.execute(text("""
+                    ALTER TABLE users 
+                    ALTER COLUMN last_name DROP DEFAULT
+                """))
+                db.session.commit()
+                print("✅ Added last_name column")
+            else:
+                print("✅ last_name column exists")
+            
+            return True
+            
+        except Exception as e:
+            print(f"⚠️  Schema fix warning: {e}")
+            db.session.rollback()
+            return False
+
+# ------------------------------------------------------------------
+#  Database Migrations - AUTO UPGRADE ON STARTUP
 # ------------------------------------------------------------------
 def run_migrations():
-    """Run database migrations automatically on startup with version fixing"""
+    """Run database migrations automatically on startup"""
     with app.app_context():
         try:
             print("🔄 Running database migrations...")
             
-            # Check if we can get the current revision
-            from alembic import command
-            from alembic.config import Config as AlembicConfig
-            from alembic.runtime import migration
-            from alembic.script import ScriptDirectory
-            
-            # Get alembic config
-            alembic_cfg = AlembicConfig("migrations/alembic.ini")
-            alembic_cfg.set_main_option("script_location", "migrations")
-            
-            # Get script directory
-            script = ScriptDirectory.from_config(alembic_cfg)
-            
-            # Get current database version
-            with db.engine.connect() as connection:
-                context = migration.MigrationContext.configure(connection)
-                current_rev = context.get_current_revision()
-                
-                print(f"📊 Current database revision: {current_rev}")
-                
-                # If database has unknown revision (like '001'), stamp it to base
-                if current_rev and current_rev not in script.get_revisions(current_rev):
-                    print(f"⚠️  Unknown revision '{current_rev}' detected. Stamping to base...")
-                    # Get the base revision (first one)
-                    base_rev = script.get_base_revision()
-                    print(f"📝 Stamping database to base revision: {base_rev}")
-                    command.stamp(alembic_cfg, base_rev)
-                    print("✅ Database stamped successfully")
-            
-            # Now run upgrade
-            flask_migrate_upgrade()
-            print("✅ Database migrations applied successfully")
-            return True
-            
-        except Exception as e:
-            print(f"⚠️  Migration warning: {str(e)}")
-            print("   Attempting to stamp and recreate...")
-            
+            # Try upgrade first
             try:
-                # If all else fails, stamp to most recent and create tables
-                from alembic import command
-                from alembic.config import Config as AlembicConfig
-                alembic_cfg = AlembicConfig("migrations/alembic.ini")
-                alembic_cfg.set_main_option("script_location", "migrations")
-                
-                # Stamp to head (latest)
-                command.stamp(alembic_cfg, "head")
-                print("✅ Stamped to head revision")
-                
-                # Create tables if they don't exist
-                db.create_all()
-                print("✅ Tables verified")
+                flask_migrate_upgrade()
+                print("✅ Database migrations completed")
                 return True
+            except Exception as upgrade_error:
+                error_str = str(upgrade_error)
                 
-            except Exception as e2:
-                print(f"❌ Critical migration failure: {e2}")
-                return False
+                # If unknown revision error, stamp to head
+                if "Can't locate revision" in error_str:
+                    print(f"⚠️  Unknown revision error: {upgrade_error}")
+                    print("🔄 Stamping database to head...")
+                    
+                    from alembic import command
+                    from alembic.config import Config as AlembicConfig
+                    
+                    alembic_cfg = AlembicConfig("migrations/alembic.ini")
+                    alembic_cfg.set_main_option("script_location", "migrations")
+                    command.stamp(alembic_cfg, "head")
+                    print("✅ Database stamped to head")
+                    return True
+                else:
+                    raise
+                    
+        except Exception as e:
+            print(f"⚠️  Migration warning: {e}")
+            return False
 
 # ------------------------------------------------------------------
 #  Database initialisation - FIXED VERSION
@@ -325,12 +349,18 @@ def debug_db():
         inspector = inspect(db.engine)
         tables = inspector.get_table_names()
         
-        # Check users table
+        # Check users table columns
+        user_columns = []
+        if 'users' in tables:
+            user_columns = [col['name'] for col in inspector.get_columns('users')]
+        
+        # Check users count
         user_count = User.query.count() if 'users' in tables else 'N/A'
         
         return {
             'database_version': version,
             'tables': tables,
+            'user_columns': user_columns,
             'user_count': user_count,
             'database_url': app.config['SQLALCHEMY_DATABASE_URI'][:50] + '...'  # masked
         }
@@ -342,13 +372,16 @@ def debug_db():
 #  CRITICAL FIX: Initialize database on startup (not just in __main__)
 # ------------------------------------------------------------------
 print("🚀 Initializing application on startup...")
+
+print("🔄 Step 0: Fixing database schema...")
+fix_database_schema()
+
 print("🔄 Step 1: Running database migrations...")
-migration_success = run_migrations()
-if not migration_success:
-    print("⚠️  Migration had issues, but continuing...")
+run_migrations()
 
 print("🔄 Step 2: Initializing database...")
 init_database()
+
 print("✅ Startup initialization complete")
 
 # ------------------------------------------------------------------
