@@ -140,7 +140,7 @@ def fix_database_schema():
             
             print(f"📊 Found columns in users table: {columns}")
             
-            # Check for first_name
+            # FIX 1: Add first_name if missing
             if 'first_name' not in columns:
                 print("⚠️  Missing first_name column! Adding it...")
                 db.session.execute(text("""
@@ -156,10 +156,10 @@ def fix_database_schema():
             else:
                 print("✅ first_name column exists")
             
-            # Check for last_name
+            # FIX 2: Add last_name if missing
             if 'last_name' not in columns:
                 print("⚠️  Missing last_name column! Adding it...")
-                db.session.session.execute(text("""
+                db.session.execute(text("""
                     ALTER TABLE users 
                     ADD COLUMN last_name VARCHAR(50) NOT NULL DEFAULT 'Unknown'
                 """))
@@ -180,7 +180,7 @@ def fix_database_schema():
             return False
 
 # ------------------------------------------------------------------
-#  Database Migrations - AUTO UPGRADE ON STARTUP
+#  Database Migrations - AUTO UPGRADE ON STARTUP WITH ERROR HANDLING
 # ------------------------------------------------------------------
 def run_migrations():
     """Run database migrations automatically on startup"""
@@ -197,24 +197,37 @@ def run_migrations():
                 error_str = str(upgrade_error)
                 
                 # If unknown revision error, stamp to head
-                if "Can't locate revision" in error_str:
+                if "Can't locate revision" in error_str or "Can't locate revision" in error_str:
                     print(f"⚠️  Unknown revision error: {upgrade_error}")
-                    print("🔄 Stamping database to head...")
+                    print("🔄 Stamping database to head and recreating tables...")
                     
                     from alembic import command
                     from alembic.config import Config as AlembicConfig
                     
                     alembic_cfg = AlembicConfig("migrations/alembic.ini")
                     alembic_cfg.set_main_option("script_location", "migrations")
+                    
+                    # Stamp to head (latest)
                     command.stamp(alembic_cfg, "head")
                     print("✅ Database stamped to head")
+                    
+                    # Create missing tables
+                    db.create_all()
+                    print("✅ Tables verified")
                     return True
                 else:
                     raise
                     
         except Exception as e:
-            print(f"⚠️  Migration warning: {e}")
-            return False
+            print(f"⚠️  Migration error: {e}")
+            print("🔄 Attempting emergency table creation...")
+            try:
+                db.create_all()
+                print("✅ Tables created via db.create_all()")
+                return True
+            except Exception as e2:
+                print(f"❌ Emergency creation failed: {e2}")
+                return False
 
 # ------------------------------------------------------------------
 #  Database initialisation - FIXED VERSION
@@ -234,6 +247,15 @@ def init_database():
             admin_password = os.environ.get('ADMIN_PASSWORD', 'Admin123!')
             
             print(f"🔍 Checking for admin user: {admin_email}")
+            
+            # FIX: Check if columns exist before querying
+            from sqlalchemy import inspect, text
+            inspector = inspect(db.engine)
+            columns = [col['name'] for col in inspector.get_columns('users')]
+            
+            if 'first_name' not in columns or 'last_name' not in columns:
+                print("⚠️  Columns still missing, skipping admin check...")
+                return True
             
             existing_admin = User.query.filter_by(email=admin_email).first()
             
@@ -374,10 +396,10 @@ def debug_db():
 print("🚀 Initializing application on startup...")
 
 print("🔄 Step 0: Fixing database schema...")
-fix_database_schema()
+schema_fixed = fix_database_schema()
 
 print("🔄 Step 1: Running database migrations...")
-run_migrations()
+migration_success = run_migrations()
 
 print("🔄 Step 2: Initializing database...")
 init_database()
