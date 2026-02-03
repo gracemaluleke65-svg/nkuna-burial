@@ -129,10 +129,10 @@ def make_shell_context():
 #  CRITICAL FIX: COMPLETE SCHEMA MIGRATION
 # ------------------------------------------------------------------
 def fix_database_schema():
-    """Complete schema fix - rename columns, add missing ones, handle constraints"""
+    """DEFINITIVE SCHEMA FIX: Alter types, add columns, drop old columns"""
     with app.app_context():
         try:
-            print("🔧 Starting database schema fix...")
+            print("🔧 Starting DEFINITIVE database schema fix...")
             from sqlalchemy import text, inspect
             
             inspector = inspect(db.engine)
@@ -141,43 +141,38 @@ def fix_database_schema():
                 print("❌ Users table doesn't exist!")
                 return False
             
+            # Get current columns and their types
             columns_info = {col['name']: col for col in inspector.get_columns('users')}
             columns = list(columns_info.keys())
-            print(f"📊 Found columns: {columns}")
             
-            # Step 1: Rename old columns to new names
-            renames = [
-                ('phone_number', 'phone'),
-                ('student_number', 'id_number'),
-            ]
+            print(f"📊 Current columns: {columns}")
+            for col_name, col_info in columns_info.items():
+                print(f"   - {col_name}: {col_info['type']} (nullable: {col_info['nullable']})")
             
-            for old_name, new_name in renames:
-                if old_name in columns and new_name not in columns:
-                    print(f"🔄 Renaming {old_name} to {new_name}...")
-                    db.session.execute(text(f"ALTER TABLE users RENAME COLUMN {old_name} TO {new_name}"))
-                    db.session.commit()
-                    print(f"✅ Renamed {old_name} to {new_name}")
-                    # Update our tracking
-                    columns.append(new_name)
+            # STEP 1: Fix column lengths
+            print("\\n🔧 Step 1: Fixing column lengths...")
             
-            # Step 2: Drop constraints on old columns if they still exist
-            for old_name, new_name in renames:
-                if old_name in columns:
-                    print(f"⚠️  Old column {old_name} still exists, making it nullable...")
-                    try:
-                        db.session.execute(text(f"ALTER TABLE users ALTER COLUMN {old_name} DROP NOT NULL"))
-                        db.session.commit()
-                        print(f"✅ Made {old_name} nullable")
-                    except Exception as e:
-                        print(f"⚠️  Could not alter {old_name}: {e}")
+            # Fix id_number length (VARCHAR(10) -> VARCHAR(13))
+            if 'id_number' in columns:
+                print("🔧 Altering id_number to VARCHAR(13)...")
+                db.session.execute(text("ALTER TABLE users ALTER COLUMN id_number TYPE VARCHAR(13)"))
+                db.session.commit()
+                print("✅ id_number is now VARCHAR(13)")
             
-            # Step 3: Add missing columns with safe defaults
-            column_definitions = [
+            # Fix phone length (might be VARCHAR(10) -> VARCHAR(20))
+            if 'phone' in columns:
+                print("🔧 Altering phone to VARCHAR(20)...")
+                db.session.execute(text("ALTER TABLE users ALTER COLUMN phone TYPE VARCHAR(20)"))
+                db.session.commit()
+                print("✅ phone is now VARCHAR(20)")
+            
+            # STEP 2: Add missing columns with proper defaults
+            print("\\n🔧 Step 2: Adding missing columns...")
+            
+            new_columns = [
                 ('first_name', 'VARCHAR(50)', "'Unknown'"),
                 ('last_name', 'VARCHAR(50)', "'Unknown'"),
-                ('phone', 'VARCHAR(20)', "'+27 00 000 0000'"),
                 ('address', 'TEXT', "'Not provided'"),
-                ('id_number', 'VARCHAR(13)', "'0000000000000'"),
                 ('is_admin', 'BOOLEAN', 'FALSE'),
                 ('is_active', 'BOOLEAN', 'TRUE'),
                 ('registration_fee_paid', 'BOOLEAN', 'FALSE'),
@@ -185,20 +180,14 @@ def fix_database_schema():
                 ('updated_at', 'TIMESTAMP', 'CURRENT_TIMESTAMP'),
             ]
             
-            for col_name, col_type, default_val in column_definitions:
+            for col_name, col_type, default_val in new_columns:
                 if col_name not in columns:
                     print(f"➕ Adding {col_name}...")
                     try:
-                        # Add column with default
+                        # Add with default
                         db.session.execute(text(f"""
                             ALTER TABLE users 
                             ADD COLUMN {col_name} {col_type} DEFAULT {default_val}
-                        """))
-                        db.session.commit()
-                        
-                        # Update existing rows
-                        db.session.execute(text(f"""
-                            UPDATE users SET {col_name} = {default_val} WHERE {col_name} IS NULL
                         """))
                         db.session.commit()
                         
@@ -213,30 +202,110 @@ def fix_database_schema():
                         print(f"⚠️  Error adding {col_name}: {e}")
                         db.session.rollback()
             
-            # Step 4: Special handling - if both old and new columns exist, copy data then drop old
-            for old_name, new_name in renames:
-                if old_name in columns and new_name in columns:
-                    print(f"📝 Both {old_name} and {new_name} exist, copying data...")
-                    try:
-                        db.session.execute(text(f"""
-                            UPDATE users SET {new_name} = {old_name} WHERE {new_name} IS NULL OR {new_name} = {column_definitions[[c[0] for c in column_definitions].index(new_name)][2]}
-                        """))
-                        db.session.commit()
-                        print(f"✅ Copied data from {old_name} to {new_name}")
-                    except Exception as e:
-                        print(f"⚠️  Could not copy data: {e}")
+            # STEP 3: Rename old columns if they exist
+            print("\\n🔧 Step 3: Renaming old columns...")
             
-            print("✅ Schema fix completed")
+            if 'phone_number' in columns and 'phone' not in columns:
+                print("🔄 Renaming phone_number to phone...")
+                db.session.execute(text("ALTER TABLE users RENAME COLUMN phone_number TO phone"))
+                db.session.execute(text("ALTER TABLE users ALTER COLUMN phone TYPE VARCHAR(20)"))
+                db.session.commit()
+                print("✅ Renamed phone_number to phone (VARCHAR(20))")
+            
+            if 'student_number' in columns and 'id_number' not in columns:
+                print("🔄 Renaming student_number to id_number...")
+                db.session.execute(text("ALTER TABLE users RENAME COLUMN student_number TO id_number"))
+                db.session.execute(text("ALTER TABLE users ALTER COLUMN id_number TYPE VARCHAR(13)"))
+                db.session.commit()
+                print("✅ Renamed student_number to id_number (VARCHAR(13))")
+            
+            # STEP 4: Handle problematic old columns (full_name, student_number)
+            print("\\n🔧 Step 4: Removing old problematic columns...")
+            
+            # Handle full_name - make nullable, drop if possible
+            if 'full_name' in columns:
+                print("⚠️  Found full_name column...")
+                try:
+                    # Try to make it nullable first
+                    db.session.execute(text("ALTER TABLE users ALTER COLUMN full_name DROP NOT NULL"))
+                    db.session.commit()
+                    print("✅ Made full_name nullable")
+                except Exception as e:
+                    print(f"⚠️  Could not make full_name nullable: {e}")
+                
+                # Try to drop it
+                try:
+                    db.session.execute(text("ALTER TABLE users DROP COLUMN full_name"))
+                    db.session.commit()
+                    print("✅ Dropped full_name column")
+                except Exception as e:
+                    print(f"⚠️  Could not drop full_name (might have constraints): {e}")
+            
+            # Handle student_number if still exists after rename attempt
+            if 'student_number' in columns:
+                print("⚠️  Found student_number column (not renamed)...")
+                try:
+                    db.session.execute(text("ALTER TABLE users ALTER COLUMN student_number DROP NOT NULL"))
+                    db.session.commit()
+                    print("✅ Made student_number nullable")
+                except Exception as e:
+                    print(f"⚠️  Could not alter student_number: {e}")
+                
+                try:
+                    db.session.execute(text("ALTER TABLE users DROP COLUMN student_number"))
+                    db.session.commit()
+                    print("✅ Dropped student_number column")
+                except Exception as e:
+                    print(f"⚠️  Could not drop student_number: {e}")
+            
+            # STEP 5: Final verification and cleanup
+            print("\\n🔧 Step 5: Final verification...")
+            
+            # Verify all required columns exist with correct types
+            inspector = inspect(db.engine)
+            final_columns = {col['name']: col for col in inspector.get_columns('users')}
+            
+            required = {
+                'id_number': 'VARCHAR(13)',
+                'first_name': 'VARCHAR(50)',
+                'last_name': 'VARCHAR(50)',
+                'email': 'VARCHAR',
+                'phone': 'VARCHAR(20)',
+                'address': 'TEXT',
+                'password_hash': 'VARCHAR',
+                'is_admin': 'BOOLEAN',
+                'is_active': 'BOOLEAN',
+                'registration_fee_paid': 'BOOLEAN',
+                'virtual_balance': 'FLOAT',
+                'created_at': 'TIMESTAMP',
+                'updated_at': 'TIMESTAMP',
+            }
+            
+            all_good = True
+            for req_col, req_type in required.items():
+                if req_col not in final_columns:
+                    print(f"❌ MISSING: {req_col}")
+                    all_good = False
+                else:
+                    actual_type = str(final_columns[req_col]['type'])
+                    if req_type not in actual_type:
+                        print(f"⚠️  TYPE MISMATCH: {req_col} is {actual_type}, expected {req_type}")
+                    else:
+                        print(f"✅ {req_col}: {actual_type}")
+            
+            if all_good:
+                print("\\n✅ Schema fix completed successfully!")
+            else:
+                print("\\n⚠️  Some issues remain, but continuing...")
+            
             return True
             
         except Exception as e:
-            print(f"❌ Schema fix error: {e}")
+            print(f"\\n❌ Schema fix error: {e}")
             import traceback
             print(traceback.format_exc())
             db.session.rollback()
-            return False
-
-# ------------------------------------------------------------------
+            return False# ------------------------------------------------------------------
 #  NUCLEAR OPTION: Complete table rebuild
 # ------------------------------------------------------------------
 def nuclear_rebuild_users_table():
@@ -424,7 +493,7 @@ def init_database():
                 first_name='System',
                 last_name='Administrator',
                 email=admin_email,
-                phone='+27 11 123 4567',
+                phone='0000000000',
                 address='Administration Office',
                 is_admin=True,
                 is_active=True,
