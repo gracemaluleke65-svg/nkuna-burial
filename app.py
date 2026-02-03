@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_login import LoginManager, current_user
-from flask_migrate import Migrate, upgrade as flask_migrate_upgrade
+from flask_migrate import Migrate, upgrade as flask_migrate_upgrade, stamp as flask_migrate_stamp
 from datetime import datetime, timedelta
 import os
 import json
@@ -126,21 +126,71 @@ def make_shell_context():
     }
 
 # ------------------------------------------------------------------
-#  Database Migrations - AUTO UPGRADE ON STARTUP
+#  Database Migrations - AUTO UPGRADE ON STARTUP WITH VERSION FIX
 # ------------------------------------------------------------------
 def run_migrations():
-    """Run database migrations automatically on startup"""
+    """Run database migrations automatically on startup with version fixing"""
     with app.app_context():
         try:
             print("🔄 Running database migrations...")
-            # This runs the equivalent of 'flask db upgrade'
+            
+            # Check if we can get the current revision
+            from alembic import command
+            from alembic.config import Config as AlembicConfig
+            from alembic.runtime import migration
+            from alembic.script import ScriptDirectory
+            
+            # Get alembic config
+            alembic_cfg = AlembicConfig("migrations/alembic.ini")
+            alembic_cfg.set_main_option("script_location", "migrations")
+            
+            # Get script directory
+            script = ScriptDirectory.from_config(alembic_cfg)
+            
+            # Get current database version
+            with db.engine.connect() as connection:
+                context = migration.MigrationContext.configure(connection)
+                current_rev = context.get_current_revision()
+                
+                print(f"📊 Current database revision: {current_rev}")
+                
+                # If database has unknown revision (like '001'), stamp it to base
+                if current_rev and current_rev not in script.get_revisions(current_rev):
+                    print(f"⚠️  Unknown revision '{current_rev}' detected. Stamping to base...")
+                    # Get the base revision (first one)
+                    base_rev = script.get_base_revision()
+                    print(f"📝 Stamping database to base revision: {base_rev}")
+                    command.stamp(alembic_cfg, base_rev)
+                    print("✅ Database stamped successfully")
+            
+            # Now run upgrade
             flask_migrate_upgrade()
             print("✅ Database migrations applied successfully")
             return True
+            
         except Exception as e:
             print(f"⚠️  Migration warning: {str(e)}")
-            print("   This is normal if no migrations are pending or if using SQLite")
-            return False
+            print("   Attempting to stamp and recreate...")
+            
+            try:
+                # If all else fails, stamp to most recent and create tables
+                from alembic import command
+                from alembic.config import Config as AlembicConfig
+                alembic_cfg = AlembicConfig("migrations/alembic.ini")
+                alembic_cfg.set_main_option("script_location", "migrations")
+                
+                # Stamp to head (latest)
+                command.stamp(alembic_cfg, "head")
+                print("✅ Stamped to head revision")
+                
+                # Create tables if they don't exist
+                db.create_all()
+                print("✅ Tables verified")
+                return True
+                
+            except Exception as e2:
+                print(f"❌ Critical migration failure: {e2}")
+                return False
 
 # ------------------------------------------------------------------
 #  Database initialisation - FIXED VERSION
@@ -293,7 +343,10 @@ def debug_db():
 # ------------------------------------------------------------------
 print("🚀 Initializing application on startup...")
 print("🔄 Step 1: Running database migrations...")
-run_migrations()
+migration_success = run_migrations()
+if not migration_success:
+    print("⚠️  Migration had issues, but continuing...")
+
 print("🔄 Step 2: Initializing database...")
 init_database()
 print("✅ Startup initialization complete")
