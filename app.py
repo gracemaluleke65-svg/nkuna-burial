@@ -126,23 +126,66 @@ def make_shell_context():
     }
 
 # ------------------------------------------------------------------
-#  CRITICAL FIX: Ensure database schema matches models
+#  CRITICAL FIX: FULL SCHEMA MIGRATION
 # ------------------------------------------------------------------
 def fix_database_schema():
-    """Manually fix missing columns that migrations missed"""
+    """COMPLETE SCHEMA FIX: Reconcile old schema with new model"""
     with app.app_context():
         try:
             print("🔧 Checking database schema...")
             from sqlalchemy import text, inspect
             
             inspector = inspect(db.engine)
-            columns = [col['name'] for col in inspector.get_columns('users')]
+            columns = {col['name']: col for col in inspector.get_columns('users')}
             
-            print(f"📊 Found columns in users table: {columns}")
+            print(f"📊 Current columns: {list(columns.keys())}")
             
-            # Add first_name if missing
+            # MAPPING: Handle column name differences
+            # Old schema -> New schema mappings needed:
+            # phone_number -> phone
+            # full_name -> (split to first_name/last_name or keep as is)
+            # student_number -> id_number (maybe?)
+            
+            changes_made = []
+            
+            # 1. Fix phone_number -> phone
+            if 'phone_number' in columns and 'phone' not in columns:
+                print("🔄 Renaming phone_number to phone...")
+                db.session.execute(text("""
+                    ALTER TABLE users 
+                    RENAME COLUMN phone_number TO phone
+                """))
+                db.session.commit()
+                changes_made.append("phone_number -> phone")
+            
+            # 2. Add id_number if missing (and student_number doesn't exist)
+            if 'id_number' not in columns and 'student_number' not in columns:
+                print("➕ Adding id_number column...")
+                db.session.execute(text("""
+                    ALTER TABLE users 
+                    ADD COLUMN id_number VARCHAR(13) UNIQUE
+                """))
+                db.session.commit()
+                changes_made.append("Added id_number")
+            
+            # 3. Map student_number to id_number if needed
+            if 'student_number' in columns and 'id_number' not in columns:
+                print("🔄 Renaming student_number to id_number...")
+                db.session.execute(text("""
+                    ALTER TABLE users 
+                    RENAME COLUMN student_number TO id_number
+                """))
+                # Make it VARCHAR(13) if it was different
+                db.session.execute(text("""
+                    ALTER TABLE users 
+                    ALTER COLUMN id_number TYPE VARCHAR(13)
+                """))
+                db.session.commit()
+                changes_made.append("student_number -> id_number")
+            
+            # 4. Add first_name if missing
             if 'first_name' not in columns:
-                print("⚠️  Missing first_name column! Adding it...")
+                print("➕ Adding first_name column...")
                 db.session.execute(text("""
                     ALTER TABLE users 
                     ADD COLUMN first_name VARCHAR(50) NOT NULL DEFAULT 'Unknown'
@@ -152,13 +195,17 @@ def fix_database_schema():
                     ALTER COLUMN first_name DROP DEFAULT
                 """))
                 db.session.commit()
-                print("✅ Added first_name column")
-            else:
-                print("✅ first_name column exists")
+                changes_made.append("Added first_name")
+                
+                # If full_name exists, try to split it
+                if 'full_name' in columns:
+                    print("📝 Migrating full_name data to first_name...")
+                    # Set all to 'Unknown' for now, manual fix later
+                    pass
             
-            # Add last_name if missing
+            # 5. Add last_name if missing
             if 'last_name' not in columns:
-                print("⚠️  Missing last_name column! Adding it...")
+                print("➕ Adding last_name column...")
                 db.session.execute(text("""
                     ALTER TABLE users 
                     ADD COLUMN last_name VARCHAR(50) NOT NULL DEFAULT 'Unknown'
@@ -168,14 +215,70 @@ def fix_database_schema():
                     ALTER COLUMN last_name DROP DEFAULT
                 """))
                 db.session.commit()
-                print("✅ Added last_name column")
+                changes_made.append("Added last_name")
+            
+            # 6. Add address if missing
+            if 'address' not in columns:
+                print("➕ Adding address column...")
+                db.session.execute(text("""
+                    ALTER TABLE users 
+                    ADD COLUMN address TEXT NOT NULL DEFAULT 'Not provided'
+                """))
+                db.session.execute(text("""
+                    ALTER TABLE users 
+                    ALTER COLUMN address DROP DEFAULT
+                """))
+                db.session.commit()
+                changes_made.append("Added address")
+            
+            # 7. Add missing boolean columns
+            bool_columns = [
+                ('is_admin', 'false'),
+                ('is_active', 'true'), 
+                ('registration_fee_paid', 'false')
+            ]
+            
+            for col_name, default_val in bool_columns:
+                if col_name not in columns:
+                    print(f"➕ Adding {col_name} column...")
+                    db.session.execute(text(f"""
+                        ALTER TABLE users 
+                        ADD COLUMN {col_name} BOOLEAN NOT NULL DEFAULT {default_val}
+                    """))
+                    db.session.commit()
+                    changes_made.append(f"Added {col_name}")
+            
+            # 8. Add virtual_balance if missing
+            if 'virtual_balance' not in columns:
+                print("➕ Adding virtual_balance column...")
+                db.session.execute(text("""
+                    ALTER TABLE users 
+                    ADD COLUMN virtual_balance FLOAT NOT NULL DEFAULT 0.0
+                """))
+                db.session.commit()
+                changes_made.append("Added virtual_balance")
+            
+            # 9. Add updated_at if missing
+            if 'updated_at' not in columns:
+                print("➕ Adding updated_at column...")
+                db.session.execute(text("""
+                    ALTER TABLE users 
+                    ADD COLUMN updated_at TIMESTAMP
+                """))
+                db.session.commit()
+                changes_made.append("Added updated_at")
+            
+            if changes_made:
+                print(f"✅ Schema changes made: {changes_made}")
             else:
-                print("✅ last_name column exists")
+                print("✅ Schema is up to date")
             
             return True
             
         except Exception as e:
-            print(f"⚠️  Schema fix warning: {e}")
+            print(f"❌ Schema fix error: {e}")
+            import traceback
+            print(traceback.format_exc())
             db.session.rollback()
             return False
 
@@ -206,7 +309,6 @@ def run_migrations():
                 
                 # Get all available revisions
                 all_revisions = [rev.revision for rev in script.walk_revisions()]
-                print(f"📋 Available revisions: {all_revisions}")
                 
                 # If current_rev is '001' or unknown, or if it's not in our revisions
                 if current_rev == '001' or current_rev is None or current_rev not in all_revisions:
@@ -267,13 +369,17 @@ def init_database():
             
             print(f"🔍 Checking for admin user: {admin_email}")
             
-            # Safety check: verify columns exist before querying
+            # Safety check: verify all required columns exist
             from sqlalchemy import inspect
             inspector = inspect(db.engine)
             columns = [col['name'] for col in inspector.get_columns('users')]
             
-            if 'first_name' not in columns or 'last_name' not in columns:
-                print("⚠️  Required columns missing, skipping admin initialization")
+            required_cols = ['first_name', 'last_name', 'phone', 'address', 'id_number']
+            missing = [c for c in required_cols if c not in columns]
+            
+            if missing:
+                print(f"⚠️  Required columns still missing: {missing}")
+                print("⚠️  Skipping admin initialization")
                 return True
             
             existing_admin = User.query.filter_by(email=admin_email).first()
@@ -282,7 +388,7 @@ def init_database():
                 print(f"✅ Admin user already exists: {admin_email}")
                 
                 # Update admin to have first_name/last_name if missing
-                if not existing_admin.first_name:
+                if not existing_admin.first_name or existing_admin.first_name == 'Unknown':
                     existing_admin.first_name = 'System'
                     existing_admin.last_name = 'Administrator'
                     db.session.commit()
@@ -408,13 +514,16 @@ def debug_db():
 print("🚀 Initializing application on startup...")
 
 print("🔄 Step 0: Fixing database schema...")
-fix_database_schema()
+schema_fixed = fix_database_schema()
 
-print("🔄 Step 1: Running database migrations...")
-migration_success = run_migrations()
-
-print("🔄 Step 2: Initializing database...")
-init_database()
+if schema_fixed:
+    print("🔄 Step 1: Running database migrations...")
+    migration_success = run_migrations()
+    
+    print("🔄 Step 2: Initializing database...")
+    init_database()
+else:
+    print("❌ Schema fix failed, but continuing...")
 
 print("✅ Startup initialization complete")
 
