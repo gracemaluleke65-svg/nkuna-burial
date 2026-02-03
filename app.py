@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_login import LoginManager, current_user
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade as flask_migrate_upgrade
 from datetime import datetime, timedelta
 import os
 import json
@@ -124,6 +124,23 @@ def make_shell_context():
         'AdminFee': AdminFee,
         'SystemLog': SystemLog
     }
+
+# ------------------------------------------------------------------
+#  Database Migrations - AUTO UPGRADE ON STARTUP
+# ------------------------------------------------------------------
+def run_migrations():
+    """Run database migrations automatically on startup"""
+    with app.app_context():
+        try:
+            print("🔄 Running database migrations...")
+            # This runs the equivalent of 'flask db upgrade'
+            flask_migrate_upgrade()
+            print("✅ Database migrations applied successfully")
+            return True
+        except Exception as e:
+            print(f"⚠️  Migration warning: {str(e)}")
+            print("   This is normal if no migrations are pending or if using SQLite")
+            return False
 
 # ------------------------------------------------------------------
 #  Database initialisation - FIXED VERSION
@@ -274,7 +291,10 @@ def debug_db():
 # ------------------------------------------------------------------
 #  CRITICAL FIX: Initialize database on startup (not just in __main__)
 # ------------------------------------------------------------------
-print("🚀 Initializing database on application startup...")
+print("🚀 Initializing application on startup...")
+print("🔄 Step 1: Running database migrations...")
+run_migrations()
+print("🔄 Step 2: Initializing database...")
 init_database()
 print("✅ Startup initialization complete")
 
