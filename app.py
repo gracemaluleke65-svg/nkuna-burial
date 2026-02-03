@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_login import LoginManager, current_user
-from flask_migrate import Migrate, upgrade as flask_migrate_upgrade, stamp as flask_migrate_stamp
+from flask_migrate import Migrate, upgrade as flask_migrate_upgrade
 from datetime import datetime, timedelta
 import os
 import json
@@ -140,7 +140,7 @@ def fix_database_schema():
             
             print(f"📊 Found columns in users table: {columns}")
             
-            # FIX 1: Add first_name if missing
+            # Add first_name if missing
             if 'first_name' not in columns:
                 print("⚠️  Missing first_name column! Adding it...")
                 db.session.execute(text("""
@@ -156,7 +156,7 @@ def fix_database_schema():
             else:
                 print("✅ first_name column exists")
             
-            # FIX 2: Add last_name if missing
+            # Add last_name if missing
             if 'last_name' not in columns:
                 print("⚠️  Missing last_name column! Adding it...")
                 db.session.execute(text("""
@@ -180,54 +180,73 @@ def fix_database_schema():
             return False
 
 # ------------------------------------------------------------------
-#  Database Migrations - AUTO UPGRADE ON STARTUP WITH ERROR HANDLING
+#  Database Migrations - BULLETPROOF VERSION
 # ------------------------------------------------------------------
 def run_migrations():
-    """Run database migrations automatically on startup"""
+    """Run database migrations with automatic error recovery"""
     with app.app_context():
         try:
             print("🔄 Running database migrations...")
             
-            # Try upgrade first
-            try:
-                flask_migrate_upgrade()
-                print("✅ Database migrations completed")
-                return True
-            except Exception as upgrade_error:
-                error_str = str(upgrade_error)
+            from alembic import command
+            from alembic.config import Config as AlembicConfig
+            from alembic.runtime import migration
+            from alembic.script import ScriptDirectory
+            
+            alembic_cfg = AlembicConfig("migrations/alembic.ini")
+            alembic_cfg.set_main_option("script_location", "migrations")
+            
+            script = ScriptDirectory.from_config(alembic_cfg)
+            
+            # Check current revision
+            with db.engine.connect() as connection:
+                context = migration.MigrationContext.configure(connection)
+                current_rev = context.get_current_revision()
+                print(f"📊 Current database revision: {current_rev}")
                 
-                # If unknown revision error, stamp to head
-                if "Can't locate revision" in error_str or "Can't locate revision" in error_str:
-                    print(f"⚠️  Unknown revision error: {upgrade_error}")
-                    print("🔄 Stamping database to head and recreating tables...")
-                    
+                # Get all available revisions
+                all_revisions = [rev.revision for rev in script.walk_revisions()]
+                print(f"📋 Available revisions: {all_revisions}")
+                
+                # If current_rev is '001' or unknown, or if it's not in our revisions
+                if current_rev == '001' or current_rev is None or current_rev not in all_revisions:
+                    print(f"⚠️  Revision '{current_rev}' not found in local migrations")
+                    print("🔄 Stamping database to current head...")
+                    command.stamp(alembic_cfg, "head")
+                    print("✅ Database stamped to head revision")
+                    return True
+            
+            # If we get here, try normal upgrade
+            flask_migrate_upgrade()
+            print("✅ Migrations completed successfully")
+            return True
+            
+        except Exception as e:
+            error_str = str(e)
+            print(f"⚠️  Migration error: {error_str}")
+            
+            # If it's the specific '001' error or any revision error
+            if "Can't locate revision" in error_str or "001" in error_str:
+                print("🔄 Attempting recovery by stamping to head...")
+                try:
                     from alembic import command
                     from alembic.config import Config as AlembicConfig
                     
                     alembic_cfg = AlembicConfig("migrations/alembic.ini")
                     alembic_cfg.set_main_option("script_location", "migrations")
                     
-                    # Stamp to head (latest)
+                    # Force stamp to head
                     command.stamp(alembic_cfg, "head")
-                    print("✅ Database stamped to head")
-                    
-                    # Create missing tables
-                    db.create_all()
-                    print("✅ Tables verified")
+                    print("✅ Database recovery successful - stamped to head")
                     return True
-                else:
-                    raise
-                    
-        except Exception as e:
-            print(f"⚠️  Migration error: {e}")
-            print("🔄 Attempting emergency table creation...")
-            try:
-                db.create_all()
-                print("✅ Tables created via db.create_all()")
-                return True
-            except Exception as e2:
-                print(f"❌ Emergency creation failed: {e2}")
-                return False
+                except Exception as stamp_error:
+                    print(f"⚠️  Stamp recovery failed: {stamp_error}")
+            
+            # Final fallback: just ensure tables exist
+            print("🔄 Final fallback: creating all tables...")
+            db.create_all()
+            print("✅ Tables ensured")
+            return True
 
 # ------------------------------------------------------------------
 #  Database initialisation - FIXED VERSION
@@ -238,7 +257,7 @@ def init_database():
         print("🔍 Starting database initialization...")
         
         try:
-            # Create all tables (safe to run multiple times)
+            # Ensure tables exist
             db.create_all()
             print("✅ Database tables created/verified")
             
@@ -248,31 +267,26 @@ def init_database():
             
             print(f"🔍 Checking for admin user: {admin_email}")
             
-            # FIX: Check if columns exist before querying
-            from sqlalchemy import inspect, text
+            # Safety check: verify columns exist before querying
+            from sqlalchemy import inspect
             inspector = inspect(db.engine)
             columns = [col['name'] for col in inspector.get_columns('users')]
             
             if 'first_name' not in columns or 'last_name' not in columns:
-                print("⚠️  Columns still missing, skipping admin check...")
+                print("⚠️  Required columns missing, skipping admin initialization")
                 return True
             
             existing_admin = User.query.filter_by(email=admin_email).first()
             
             if existing_admin:
                 print(f"✅ Admin user already exists: {admin_email}")
-                print(f"   Admin ID: {existing_admin.id}")
-                print(f"   Is Active: {existing_admin.is_active}")
-                print(f"   Is Admin: {existing_admin.is_admin}")
                 
-                # Verify password hash is valid
-                if existing_admin.check_password(admin_password):
-                    print("✅ Admin password hash is valid")
-                else:
-                    print("⚠️  Admin password hash mismatch - resetting password")
-                    existing_admin.set_password(admin_password)
+                # Update admin to have first_name/last_name if missing
+                if not existing_admin.first_name:
+                    existing_admin.first_name = 'System'
+                    existing_admin.last_name = 'Administrator'
                     db.session.commit()
-                    print("✅ Admin password reset successfully")
+                    print("✅ Updated admin user with first_name/last_name")
                 
                 return True
             
@@ -292,7 +306,7 @@ def init_database():
             admin.set_password(admin_password)
             
             db.session.add(admin)
-            db.session.flush()  # Get the ID without committing
+            db.session.flush()
             
             print(f"👤 Admin user created with ID: {admin.id}")
             
@@ -327,31 +341,25 @@ def init_database():
             ]
             
             for fee_data in fees:
-                # Check if fee already exists
                 existing = AdminFee.query.filter_by(fee_type=fee_data['fee_type']).first()
                 if not existing:
                     fee = AdminFee(**fee_data)
                     db.session.add(fee)
                     print(f"💰 Created fee: {fee_data['fee_type']}")
-                else:
-                    print(f"⏭️  Fee already exists: {fee_data['fee_type']}")
             
             db.session.commit()
             
             print('=' * 60)
             print("✅ DATABASE INITIALIZATION COMPLETE")
             print('=' * 60)
-            print(f"👤 Admin User Created:")
-            print(f"   Email: {admin_email}")
-            print(f"   Password: {admin_password}")
-            print(f"   ID: {admin.id}")
+            print(f"👤 Admin User: {admin_email} / {admin_password}")
             print('=' * 60)
             
             return True
             
         except Exception as e:
             db.session.rollback()
-            print(f"❌ CRITICAL ERROR during database initialization: {str(e)}")
+            print(f"❌ Database initialization error: {str(e)}")
             import traceback
             print(traceback.format_exc())
             return False
@@ -361,22 +369,25 @@ def init_database():
 def debug_db():
     """Debug database connection and tables"""
     try:
-        # Test connection
-        from sqlalchemy import text
+        from sqlalchemy import text, inspect
         result = db.session.execute(text('SELECT version()'))
         version = result.fetchone()[0]
         
-        # Check if tables exist
-        from sqlalchemy import inspect
         inspector = inspect(db.engine)
         tables = inspector.get_table_names()
         
-        # Check users table columns
         user_columns = []
         if 'users' in tables:
             user_columns = [col['name'] for col in inspector.get_columns('users')]
         
-        # Check users count
+        # Get alembic version
+        alembic_rev = "Unknown"
+        try:
+            result = db.session.execute(text('SELECT version_num FROM alembic_version'))
+            alembic_rev = result.fetchone()[0]
+        except:
+            pass
+        
         user_count = User.query.count() if 'users' in tables else 'N/A'
         
         return {
@@ -384,19 +395,20 @@ def debug_db():
             'tables': tables,
             'user_columns': user_columns,
             'user_count': user_count,
-            'database_url': app.config['SQLALCHEMY_DATABASE_URI'][:50] + '...'  # masked
+            'alembic_revision': alembic_rev,
+            'database_url': app.config['SQLALCHEMY_DATABASE_URI'][:50] + '...'
         }
     except Exception as e:
         return {'error': str(e), 'type': type(e).__name__}, 500
 
 
 # ------------------------------------------------------------------
-#  CRITICAL FIX: Initialize database on startup (not just in __main__)
+#  STARTUP SEQUENCE
 # ------------------------------------------------------------------
 print("🚀 Initializing application on startup...")
 
 print("🔄 Step 0: Fixing database schema...")
-schema_fixed = fix_database_schema()
+fix_database_schema()
 
 print("🔄 Step 1: Running database migrations...")
 migration_success = run_migrations()
@@ -413,11 +425,7 @@ if __name__ == '__main__':
     print('=' * 60)
     print('NKUNA BURIAL SOCIETY DIGITAL PLATFORM')
     print('=' * 60)
-
-    print('\nStarting application...')
-    print('Access the application at: http://localhost:5000')
-    print('Admin dashboard: http://localhost:5000/admin')
-    print('\nPress CTRL+C to stop the server')
+    print('Access: http://localhost:5000')
+    print('Admin: http://localhost:5000/admin')
     print('=' * 60)
-
     app.run(debug=True, host='0.0.0.0', port=5000)
